@@ -1,7 +1,7 @@
-import { Text, View, StyleSheet } from "react-native";
+import { FlatList, Text, View, StyleSheet } from "react-native";
 import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { BarChart, LineChart, PieChart, PopulationPyramid, RadarChart } from "react-native-gifted-charts";
+import { BarChart } from "react-native-gifted-charts";
 import { useState } from "react";
 
 export default function Index() {
@@ -22,6 +22,140 @@ export default function Index() {
     frontColor: selectedIndex === index ? '#ffffff' : item.frontColor,
   }));
 
+  // Mappatura colori per categoria
+  const categoryColors = {
+    'Clothing': '#4285F4',
+    'Electronics': '#34A853', 
+    'Transport': '#FBBC04',
+    'Groceries': '#EA4335',
+    'Entertainment': '#9333EA',
+    'Food & Drink': '#10B981',
+    'Shopping': '#FF6B35',
+    'Health & Fitness': '#8B5CF6'
+  };
+
+  const expenseData = [
+    {
+      id: '1',
+      date: 'Today',
+      transactions: [
+        {
+          id: 't1',
+          name: 'Nike Store',
+          category: 'Clothing',
+          amount: -734.00,
+          tax: 60.35,
+          icon: '👕',
+          color: categoryColors['Clothing']
+        }
+      ]
+    },
+    {
+      id: '2',  
+      date: '08 April',
+      transactions: [
+        {
+          id: 't2',
+          name: 'Apple Store',
+          category: 'Electronics',
+          amount: -25.00,
+          tax: 4.50,
+          icon: '📱',
+          color: categoryColors['Electronics']
+        },
+        {
+          id: 't3',
+          name: 'Uber',
+          category: 'Transport',
+          amount: -4.99,
+          tax: 0.80,
+          icon: '🚗',
+          color: categoryColors['Transport']
+        }
+      ]
+    },
+    {
+      id: '3',
+      date: '07 April',
+      transactions: [
+        {
+          id: 't4',
+          name: 'Supermarket',
+          category: 'Groceries',
+          amount: -87.50,
+          tax: 7.25,
+          icon: '🛒',
+          color: categoryColors['Groceries']
+        },
+        {
+          id: 't5',
+          name: 'Netflix',
+          category: 'Entertainment',
+          amount: -15.99,
+          tax: 2.40,
+          icon: '🎬',
+          color: categoryColors['Entertainment']
+        }
+      ]
+    },
+    {
+      id: '4',
+      date: '06 April',
+      transactions: [
+        {
+          id: 't6',
+          name: 'Starbucks',
+          category: 'Food & Drink',
+          amount: -12.75,
+          tax: 1.90,
+          icon: '☕',
+          color: categoryColors['Food & Drink']
+        },
+        {
+          id: 't7',
+          name: 'Gas Station',
+          category: 'Transport',
+          amount: -65.00,
+          tax: 5.20,
+          icon: '⛽',
+          color: categoryColors['Transport']
+        }
+      ]
+    },
+    {
+      id: '5',
+      date: '05 April',
+      transactions: [
+        {
+          id: 't8',
+          name: 'Amazon',
+          category: 'Shopping',
+          amount: -43.20,
+          tax: 3.85,
+          icon: '📦',
+          color: categoryColors['Shopping']
+        },
+        {
+          id: 't9',
+          name: 'Gym Membership',
+          category: 'Health & Fitness',
+          amount: -45.00,
+          tax: 0.00,
+          icon: '💪',
+          color: categoryColors['Health & Fitness']
+        }
+      ]
+    }
+  ];
+
+  // Calcolo del totale delle spese
+  const totalOutcome = expenseData.reduce((total, day) => {
+    return total + day.transactions.reduce((dayTotal, transaction) => {
+      return dayTotal + Math.abs(transaction.amount);
+    }, 0);
+  }, 0);
+
+
   const handleBarPress = (item, index) => {
     if (selectedIndex === index) {
       // Se la stessa barra è cliccata, deseleziona
@@ -33,6 +167,34 @@ export default function Index() {
       setSelectedIndex(index);
     }
   };
+
+  const renderTransactionItem = ({ item: transaction }) => (
+    <View style={styles.transactionItem}>
+      <View style={styles.transactionLeft}>
+        <View style={[styles.transactionIcon, { backgroundColor: transaction.color + '20' }]}>
+          <Text style={styles.transactionEmoji}>{transaction.icon}</Text>
+        </View>
+        <View>
+          <Text style={styles.transactionName}>{transaction.name}</Text>
+          <Text style={styles.transactionCategory}>{transaction.category}</Text>
+        </View>
+      </View>
+      <View style={styles.transactionRight}>
+        <Text style={styles.transactionAmount}>−€{Math.abs(transaction.amount).toFixed(2)}</Text>
+      </View>
+    </View>
+  );
+
+  const renderDaySection = ({ item: day }) => (
+    <View style={styles.daySection}>
+      <Text style={styles.dayHeader}>{day.date}</Text>
+      {day.transactions.map((transaction) => (
+        <View key={transaction.id}>
+          {renderTransactionItem({ item: transaction })}
+        </View>
+      ))}
+    </View>
+  );
 
   return (
     <View style={styles.container}>
@@ -58,6 +220,15 @@ export default function Index() {
           <BarChart data={data} barBorderRadius={4} yAxisThickness={0} xAxisThickness={0} hideRules={true}
             hideYAxisText={true} noOfSections={1} height={150} xAxisLabelTextStyle={{ color: '#ffffff', fontWeight: 'bold' }} initialSpacing={10} onPress={handleBarPress} />
         </View>
+      </View>
+
+      <View style={styles.transactionsContainer}>
+        <FlatList
+          data={expenseData}
+          renderItem={renderDaySection}
+          keyExtractor={(item) => item.id}
+          showsVerticalScrollIndicator={false}
+        />
       </View>
     </View>
   );
@@ -114,6 +285,63 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
+  },
+  transactionsContainer: {
+    flex: 0.6,
+    marginTop: '5%',
+    paddingHorizontal: '5%',
+  },
+  daySection: {
+    marginBottom: 25,
+  },
+  dayHeader: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#5B5F5F',
+    marginBottom: 15,
+  },
+  transactionItem: {
+    flexDirection: 'row',
+    backgroundColor: '#fff',
+    padding: 15,
+    borderRadius: 12,
+    marginBottom: 10,
+    elevation: 0.6,
+  },
+  transactionLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  transactionIcon: {
+    width: 45,
+    height: 45,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginRight: 15,
+  },
+  transactionEmoji: {
+    fontSize: 20,
+  },
+  transactionName: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
+  },
+  transactionCategory: {
+    fontSize: 14,
+    color: '#888',
+  },
+  transactionRight: {
+    alignItems: 'flex-end',
+  },
+  transactionAmount: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginBottom: 2,
   },
 
 });
