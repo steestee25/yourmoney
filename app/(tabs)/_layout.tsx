@@ -14,7 +14,7 @@ export default function TabLayout() {
                 tabBarStyle: {
                     position: 'absolute',
                     marginHorizontal: 10,
-                    bottom: 20,
+                    bottom: 15,
                     borderRadius: 30, // Arrotonda la barra
                     backgroundColor: '#fff',
                     shadowColor: '#000',

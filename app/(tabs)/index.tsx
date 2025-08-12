@@ -290,6 +290,7 @@ const styles = StyleSheet.create({
     flex: 0.6,
     marginTop: '5%',
     paddingHorizontal: '5%',
+    marginBottom: '15%',
   },
   daySection: {
     marginBottom: 25,
