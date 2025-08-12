@@ -12,8 +12,17 @@ export default function TabLayout() {
                 headerShadowVisible: false,
                 headerTintColor: '#007bff',
                 tabBarStyle: {
+                    position: 'absolute',
+                    marginHorizontal: 10,
+                    bottom: 20,
+                    borderRadius: 30, // Arrotonda la barra
                     backgroundColor: '#fff',
+                    shadowColor: '#000',
                 },
+                tabBarIconStyle: {
+                    marginTop: 5, // sposta solo l’icona verso il basso
+                },
+
             }}
         >
             <Tabs.Screen name="index"
