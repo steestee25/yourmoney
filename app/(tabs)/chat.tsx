@@ -1,6 +1,8 @@
 
 import { Feather } from '@expo/vector-icons';
-import { useEffect, useRef, useState } from "react";
+import { useFocusEffect } from '@react-navigation/native';
+import { useLocalSearchParams } from 'expo-router';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Keyboard,
   KeyboardAvoidingView,
@@ -21,6 +23,32 @@ export default function Chat() {
   const [loading, setLoading] = useState(false);
   const scrollViewRef = useRef<ScrollView | null>(null);
   const [keyboardOffset, setKeyboardOffset] = useState(50);
+
+  const { resetMessages } = useLocalSearchParams();
+
+  // Helper function to reset chat
+  const resetChat = () => {
+    setMessages([
+      { role: 'assistant', content: 'Ciao 👋, sono SaveBuddy. Come posso aiutarti?' }
+    ]);
+    setInput('');
+  };
+
+  // Reset chat when Chat screen looses its focus
+  useFocusEffect(
+    React.useCallback(() => {
+      return () => {
+        resetChat();
+      };
+    }, [])
+  );
+
+  // Reset chat when new message button is pressed
+  useEffect(() => {
+    if (resetMessages) {
+      resetChat();
+    }
+  }, [resetMessages]);
 
   useEffect(() => {
     // Listener for opening keyboard

@@ -1,9 +1,17 @@
 import { Entypo } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Tabs } from 'expo-router';
-import { View } from "react-native";
+import { Tabs, useRouter } from 'expo-router';
+import { TouchableOpacity, View } from "react-native";
 
 export default function TabLayout() {
+    const router = useRouter();
+
+    const handleNewMessage = () => {
+        // Send event to reset messages in chat screen
+        // Use Date.now() to ensure a new value each time
+        router.setParams({ resetMessages: Date.now().toString() });
+    };
+
     return (
         <Tabs
             screenOptions={{
@@ -17,12 +25,12 @@ export default function TabLayout() {
                     position: 'absolute',
                     marginHorizontal: 10,
                     bottom: 20,
-                    borderRadius: 30, // Arrotonda la barra
+                    borderRadius: 30,
                     backgroundColor: '#fff',
                     shadowColor: '#000',
                 },
                 tabBarIconStyle: {
-                    marginTop: 10, // sposta solo l’icona verso il basso
+                    marginTop: 10, 
                 },
 
             }}
@@ -46,32 +54,24 @@ export default function TabLayout() {
                     headerTintColor: '#000000',
                     headerTitleStyle: {
                         fontWeight: 'bold',
-                        fontSize: 30,
+                        fontSize: 28,
                     },
                     headerShown: true,
                     headerTitle: "SaveBuddy",
                     headerLeft: () => (
                         <Ionicons
                             name="menu"
-                            size={30}
+                            size={28}
                             color="#000"
                             style={{ marginLeft: 15, marginTop: 4 }}
                         />
                     ),
                     headerRight: () => (
-                        <View style={{flexDirection: 'row', gap: 12, marginTop: 4}}>
-                            <Entypo
-                                name="new-message"
-                                size={30}
-                                color="#26C0CA"
-                                style={{  }}
-                            />
-                            <Entypo
-                                name="dots-three-vertical"
-                                size={30}
-                                color="#26C0CA"
-                                style={{ marginRight: 15 }}
-                            />
+                        <View style={{ flexDirection: 'row', gap: 12 }}>
+                            <TouchableOpacity onPress={handleNewMessage}>
+                                <Entypo name="new-message" size={26} color="#26C0CA" />
+                            </TouchableOpacity>
+                            <Entypo name="dots-three-vertical" size={26} color="#26C0CA" style={{ marginRight: 15 }} />
                         </View>
                     ),
                     tabBarStyle: { display: 'none' },
