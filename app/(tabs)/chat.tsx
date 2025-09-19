@@ -97,7 +97,7 @@ export default function Chat() {
           <ScrollView
             ref={scrollViewRef}
             style={styles.messagesContainer}
-            contentContainerStyle={{ paddingTop: 10, paddingBottom: 20, paddingHorizontal: 10 }}
+            contentContainerStyle={{ paddingTop: 10, paddingBottom: 20, paddingHorizontal: 15 }}
             onContentSizeChange={() => {
               if (scrollViewRef.current) {
                 scrollViewRef.current.scrollToEnd({ animated: true });
