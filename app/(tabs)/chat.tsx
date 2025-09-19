@@ -1,29 +1,47 @@
 import { Feather } from '@expo/vector-icons';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import {
-    KeyboardAvoidingView,
-    Platform,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    View,
+  Keyboard,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  TextInput,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 
 export default function ChatInput() {
   const [message, setMessage] = useState('');
+  const [keyboardOffset, setKeyboardOffset] = useState(50); 
+
+  useEffect(() => {
+    // Listener per apertura tastiera
+    const showKeyboard = Keyboard.addListener('keyboardDidShow', () => {
+      setKeyboardOffset(90); // tastiera aperta
+    });
+
+    // Listener per chiusura tastiera
+    const hideKeyboard = Keyboard.addListener('keyboardDidHide', () => {
+      setKeyboardOffset(50); // tastiera chiusa
+    });
+
+    // Cleanup listeners
+    return () => {
+      showKeyboard.remove();
+      hideKeyboard.remove();
+    };
+  }, []);
 
   const handleSend = () => {
     console.log('Messaggio inviato:', message);
     setMessage('');
   };
 
-  const HEADER_OFFSET = 90;
-
   return (
     <KeyboardAvoidingView
       style={styles.keyboardContainer}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={HEADER_OFFSET} 
+      keyboardVerticalOffset={keyboardOffset} // dinamico
     >
       <View style={styles.container}>
         <View style={styles.inputWrapper}>
@@ -32,6 +50,8 @@ export default function ChatInput() {
             placeholder="Fai una domanda"
             value={message}
             onChangeText={setMessage}
+            multiline={true}
+            numberOfLines={4}
             placeholderTextColor="#999"
           />
           <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
@@ -46,7 +66,7 @@ export default function ChatInput() {
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
-    justifyContent: 'flex-end', 
+    justifyContent: 'flex-end',
     backgroundColor: 'transparent',
   },
   container: {
