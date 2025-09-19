@@ -213,7 +213,7 @@ export default function Index() {
           <View style={styles.recapCardExpensesContainer}>
             {(
               <Text style={styles.selectedValueText}>
-                {selectedValue ? `Expenses: ${selectedValue} €` : 'Expenses'}
+                {selectedValue ? `Expenses: ${selectedValue}€` : 'Expenses'}
               </Text>)}
           </View>
           <BarChart data={data} barBorderRadius={4} yAxisThickness={0} xAxisThickness={0} hideRules={true}
