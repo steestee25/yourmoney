@@ -1,5 +1,6 @@
 
 import { Feather } from '@expo/vector-icons';
+import { GoogleGenAI } from "@google/genai";
 import { useFocusEffect } from '@react-navigation/native';
 import { useLocalSearchParams } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
@@ -25,6 +26,10 @@ export default function Chat() {
   const [keyboardOffset, setKeyboardOffset] = useState(50);
 
   const { resetMessages } = useLocalSearchParams();
+
+  useEffect(() => {
+    callAPI();
+  }, []);
 
   // Helper function to reset chat
   const resetChat = () => {
@@ -97,6 +102,30 @@ export default function Chat() {
     'Risposta automatica generata.',
     'Grazie per il tuo messaggio!'
   ];
+
+  const callAPI = async () => {
+    try {
+      const ai = new GoogleGenAI({ apiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY });
+
+      console.log("Calling Google Gemini API...");
+
+      const result = await ai.models.generateContent({
+        model: "gemini-2.0-flash-lite",
+        contents: [{
+          role: "user",
+          parts: [{ text: "Explain how AI works in a few words" }]
+        }],
+      });
+
+      console.log("Output text:", result.text);
+      console.log("Google Gemini API call finished.");
+    } catch (error) {
+      console.error("Error calling Google Gemini API:", error);
+      if (error.message) console.error("Error message:", error.message);
+      if (error.status) console.error("Error status:", error.status);
+    }
+  };
+
 
   const sendMessage = async () => {
     if (!input.trim()) return;
