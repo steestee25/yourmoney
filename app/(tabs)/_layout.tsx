@@ -1,5 +1,7 @@
-import { Tabs } from 'expo-router';
+import { Entypo } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { Tabs } from 'expo-router';
+import { View } from "react-native";
 
 export default function TabLayout() {
     return (
@@ -14,34 +16,76 @@ export default function TabLayout() {
                 tabBarStyle: {
                     position: 'absolute',
                     marginHorizontal: 10,
-                    bottom: 15,
+                    bottom: 20,
                     borderRadius: 30, // Arrotonda la barra
                     backgroundColor: '#fff',
                     shadowColor: '#000',
                 },
                 tabBarIconStyle: {
-                    marginTop: 5, // sposta solo l’icona verso il basso
+                    marginTop: 10, // sposta solo l’icona verso il basso
                 },
 
             }}
         >
             <Tabs.Screen name="index"
                 options={{
-                    title: 'YourMoney',
+                    title: '',
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
                     ),
                     headerShown: false,
                 }} />
+
+            <Tabs.Screen name="chat"
+                options={{
+                    title: '',
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} color={color} size={26} />
+                    ),
+                    headerStyle: { backgroundColor: '#fff' },
+                    headerTintColor: '#000000',
+                    headerTitleStyle: {
+                        fontWeight: 'bold',
+                        fontSize: 30,
+                    },
+                    headerShown: true,
+                    headerTitle: "SaveBuddy",
+                    headerLeft: () => (
+                        <Ionicons
+                            name="menu"
+                            size={30}
+                            color="#000"
+                            style={{ marginLeft: 15, marginTop: 4 }}
+                        />
+                    ),
+                    headerRight: () => (
+                        <View style={{flexDirection: 'row', gap: 12, marginTop: 4}}>
+                            <Entypo
+                                name="new-message"
+                                size={30}
+                                color="#26C0CA"
+                                style={{  }}
+                            />
+                            <Entypo
+                                name="dots-three-vertical"
+                                size={30}
+                                color="#26C0CA"
+                                style={{ marginRight: 15 }}
+                            />
+                        </View>
+                    ),
+                    tabBarStyle: { display: 'none' },
+                }} />
+
             <Tabs.Screen
                 name="about"
                 options={{
-                    title: 'About',
+                    title: '',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'information-circle' : 'information-circle-outline'} color={color} size={24} />
+                        <Ionicons name={focused ? 'person' : 'person-outline'} color={color} size={24} />
                     ),
                 }}
             />
         </Tabs>
-    );
+    )
 }

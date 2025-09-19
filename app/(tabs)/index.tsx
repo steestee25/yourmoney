@@ -1,8 +1,7 @@
-import { FlatList, Text, View, StyleSheet } from "react-native";
-import { Link } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
-import { BarChart } from "react-native-gifted-charts";
 import { useState } from "react";
+import { FlatList, StyleSheet, Text, View } from "react-native";
+import { BarChart } from "react-native-gifted-charts";
 
 export default function Index() {
 
@@ -201,7 +200,7 @@ export default function Index() {
 
       <View style={styles.containerHeader}>
         <Text style={styles.textHelloMessage}>
-          Hello, <Text style={{ fontWeight: "bold" }}>Alfio</Text>
+          Hello, <Text style={{ fontWeight: "bold" }}>Stefano</Text>
         </Text>
 
         <View style={styles.iconSearch}>
@@ -229,6 +228,18 @@ export default function Index() {
           keyExtractor={(item) => item.id}
           showsVerticalScrollIndicator={false}
         />
+      </View>
+
+      {/* FAB Button */}
+      <View style={styles.fabContainer} pointerEvents="box-none">
+        {/* FAB Assistente AI */}
+        <View style={[styles.fabButtonSmall, { marginBottom: 15 }]}> 
+          <Ionicons name="chatbubble-ellipses-outline" size={32} color="#fff" />
+        </View>
+        {/* FAB Add */}
+        <View style={styles.fabButton}>
+          <Ionicons name="add" size={32} color="#fff" />
+        </View>
       </View>
     </View>
   );
@@ -345,4 +356,44 @@ const styles = StyleSheet.create({
     marginBottom: 2,
   },
 
+  fabContainer: {
+    position: 'absolute',
+    right: 24,
+    bottom: 100,
+    zIndex: 100,
+    alignItems: 'flex-end',
+    justifyContent: 'flex-end',
+    width: '100%',
+    height: '100%',
+    pointerEvents: 'box-none',
+  },
+
+  fabButtonSmall: {
+    backgroundColor: '#d4c3faff',
+    width: 50,
+    height: 50,
+    borderRadius: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+    marginRight: 6,
+  },
+
+  fabButton: {
+    backgroundColor: '#00ECEC',
+    width: 64,
+    height: 64,
+    borderRadius: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+    elevation: 4,
+  },
 });
