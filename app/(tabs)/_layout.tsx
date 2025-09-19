@@ -69,9 +69,9 @@ export default function TabLayout() {
                     headerRight: () => (
                         <View style={{ flexDirection: 'row', gap: 12 }}>
                             <TouchableOpacity onPress={handleNewMessage}>
-                                <Entypo name="new-message" size={26} color="#26C0CA" />
+                                <Entypo name="new-message" size={26} color="#6cebe9ff" />
                             </TouchableOpacity>
-                            <Entypo name="dots-three-vertical" size={26} color="#26C0CA" style={{ marginRight: 15 }} />
+                            <Entypo name="dots-three-vertical" size={26} color="#6cebe9ff" style={{ marginRight: 15 }} />
                         </View>
                     ),
                     tabBarStyle: { display: 'none' },

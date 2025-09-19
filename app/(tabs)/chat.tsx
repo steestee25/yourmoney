@@ -127,6 +127,7 @@ export default function Chat() {
             style={styles.messagesContainer}
             contentContainerStyle={{ paddingTop: 10, paddingBottom: 20, paddingHorizontal: 15 }}
             onContentSizeChange={() => {
+              // If is needed to verify that scrollViewRef is not null (aka not yet mounted)
               if (scrollViewRef.current) {
                 scrollViewRef.current.scrollToEnd({ animated: true });
               }
@@ -136,7 +137,7 @@ export default function Chat() {
               <View
                 key={idx}
                 style={{
-                  backgroundColor: msg.role === 'user' ? '#E6F4EE' : '#26C0CA',
+                  backgroundColor: msg.role === 'user' ? '#e6f4f4ff' : '#6cebe9ff',
                   alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
                   borderRadius: 16,
                   padding: 12,
@@ -172,7 +173,7 @@ export default function Chat() {
             placeholderTextColor="#999"
           />
           <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
-            <Feather name="send" size={24} color="#26C0CA" />
+            <Feather name="send" size={24} color="#6cebe9ff" />
           </TouchableOpacity>
         </View>
       </View>

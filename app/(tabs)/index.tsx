@@ -296,6 +296,7 @@ const styles = StyleSheet.create({
     fontSize: 28,
     fontWeight: 'bold',
     color: '#fff',
+    marginTop: -5,
   },
   transactionsContainer: {
     flex: 0.6,
