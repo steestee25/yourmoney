@@ -1,28 +1,36 @@
+
 import { Feather } from '@expo/vector-icons';
-import React, { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from "react";
 import {
   Keyboard,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
   StyleSheet,
+  Text,
   TextInput,
   TouchableOpacity,
-  View,
-} from 'react-native';
+  View
+} from "react-native";
 
-export default function ChatInput() {
-  const [message, setMessage] = useState('');
-  const [keyboardOffset, setKeyboardOffset] = useState(50); 
+export default function Chat() {
+  const [messages, setMessages] = useState([
+    { role: 'assistant', content: 'Ciao 👋, sono SaveBuddy. Come posso aiutarti?' }
+  ]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const scrollViewRef = useRef<ScrollView | null>(null);
+  const [keyboardOffset, setKeyboardOffset] = useState(50);
 
   useEffect(() => {
-    // Listener per apertura tastiera
+    // Listener for opening keyboard
     const showKeyboard = Keyboard.addListener('keyboardDidShow', () => {
-      setKeyboardOffset(90); // tastiera aperta
+      setKeyboardOffset(90); // keyboard opened
     });
 
-    // Listener per chiusura tastiera
+    // Listener for closing keyboard
     const hideKeyboard = Keyboard.addListener('keyboardDidHide', () => {
-      setKeyboardOffset(50); // tastiera chiusa
+      setKeyboardOffset(50); // keyboard closed
     });
 
     // Cleanup listeners
@@ -32,29 +40,110 @@ export default function ChatInput() {
     };
   }, []);
 
-  const handleSend = () => {
-    console.log('Messaggio inviato:', message);
-    setMessage('');
+
+  // Helper function to render message content with bold text
+  const renderMessageContent = (content: string) => {
+    const parts = content.split(/\*\*(.*?)\*\*/g); // Highlight text between ** **
+    return parts.map((part: string, index: number) => {
+      const isBold = index % 2 === 1;
+      return (
+        <Text
+          key={index}
+          style={{
+            fontWeight: isBold ? 'bold' : 'normal',
+            color: '#fff',
+            fontSize: 16,
+          }}
+        >
+          {part}
+        </Text>
+      );
+    });
+  };
+
+  // Fake replies
+  const fakeReplies = [
+    'Questa è una risposta fittizia.',
+    'Ecco una risposta di esempio.',
+    'Posso aiutarti con altre domande!',
+    'Risposta automatica generata.',
+    'Grazie per il tuo messaggio!'
+  ];
+
+  const sendMessage = async () => {
+    if (!input.trim()) return;
+    const newMessage = { role: 'user', content: input };
+    setMessages((prev) => [...prev, newMessage]);
+    setInput('');
+    setLoading(true);
+
+    // Simulate a fake reply
+    setTimeout(() => {
+      const reply = fakeReplies[Math.floor(Math.random() * fakeReplies.length)];
+      setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
+      setLoading(false);
+    }, 900);
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.keyboardContainer}
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-      keyboardVerticalOffset={keyboardOffset} // dinamico
+      keyboardVerticalOffset={keyboardOffset}
     >
       <View style={styles.container}>
+        <View style={{ flex: 1, width: '100%' }}>
+          {/* Messages */}
+          <ScrollView
+            ref={scrollViewRef}
+            style={styles.messagesContainer}
+            contentContainerStyle={{ paddingTop: 10, paddingBottom: 20, paddingHorizontal: 10 }}
+            onContentSizeChange={() => {
+              if (scrollViewRef.current) {
+                scrollViewRef.current.scrollToEnd({ animated: true });
+              }
+            }}
+          >
+            {messages.map((msg, idx) => (
+              <View
+                key={idx}
+                style={{
+                  backgroundColor: msg.role === 'user' ? '#E6F4EE' : '#26C0CA',
+                  alignSelf: msg.role === 'user' ? 'flex-end' : 'flex-start',
+                  borderRadius: 16,
+                  padding: 12,
+                  marginVertical: 4,
+                  maxWidth: '80%',
+                }}
+              >
+                {msg.role === 'assistant' ? (
+                  <Text style={{ color: '#fff', fontSize: 16 }}>
+                    {renderMessageContent(msg.content)}
+                  </Text>
+                ) : (
+                  <Text style={{ color: '#0B3D2E', fontSize: 16 }}>
+                    {msg.content}
+                  </Text>
+                )}
+              </View>
+            ))}
+            {loading && (
+              <Text style={{ alignSelf: 'flex-start', color: '#26C0CA', marginVertical: 8 }}>...</Text>
+            )}
+          </ScrollView>
+        </View>
+        {/* Input */}
         <View style={styles.inputWrapper}>
           <TextInput
             style={styles.textInput}
             placeholder="Fai una domanda"
-            value={message}
-            onChangeText={setMessage}
+            value={input}
+            onChangeText={setInput}
             multiline={true}
             numberOfLines={4}
             placeholderTextColor="#999"
           />
-          <TouchableOpacity onPress={handleSend} style={styles.sendButton}>
+          <TouchableOpacity onPress={sendMessage} style={styles.sendButton}>
             <Feather name="send" size={24} color="#26C0CA" />
           </TouchableOpacity>
         </View>
@@ -66,13 +155,19 @@ export default function ChatInput() {
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
-    justifyContent: 'flex-end',
     backgroundColor: 'transparent',
   },
   container: {
+    flex: 1,
     width: '100%',
-    padding: 16,
+    padding: 0,
     alignItems: 'center',
+    backgroundColor: 'transparent',
+    justifyContent: 'flex-end',
+  },
+  messagesContainer: {
+    flex: 1,
+    width: '100%',
     backgroundColor: 'transparent',
   },
   inputWrapper: {
@@ -88,7 +183,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.15,
     shadowRadius: 8,
     elevation: 4,
-    marginBottom: 10,
+    marginBottom: 20,
   },
   textInput: {
     flex: 1,
