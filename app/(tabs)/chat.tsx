@@ -25,6 +25,8 @@ export default function Chat() {
   const scrollViewRef = useRef<ScrollView | null>(null);
   const [keyboardOffset, setKeyboardOffset] = useState(50);
 
+  const ai = new GoogleGenAI({ apiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY });
+
   const { resetMessages } = useLocalSearchParams();
 
   useEffect(() => {
@@ -104,26 +106,7 @@ export default function Chat() {
   ];
 
   const callAPI = async () => {
-    try {
-      const ai = new GoogleGenAI({ apiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY });
 
-      console.log("Calling Google Gemini API...");
-
-      const result = await ai.models.generateContent({
-        model: "gemini-2.0-flash-lite",
-        contents: [{
-          role: "user",
-          parts: [{ text: "Explain how AI works in a few words" }]
-        }],
-      });
-
-      console.log("Output text:", result.text);
-      console.log("Google Gemini API call finished.");
-    } catch (error) {
-      console.error("Error calling Google Gemini API:", error);
-      if (error.message) console.error("Error message:", error.message);
-      if (error.status) console.error("Error status:", error.status);
-    }
   };
 
 
@@ -134,12 +117,43 @@ export default function Chat() {
     setInput('');
     setLoading(true);
 
-    // Simulate a fake reply
-    setTimeout(() => {
-      const reply = fakeReplies[Math.floor(Math.random() * fakeReplies.length)];
+    try {
+      console.log("Calling Google Gemini API...");
+
+      /*const result = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: [{
+          role: "user",
+          parts: [{ text: input }]
+        }],
+      });*/
+
+      const context = [
+        ...messages.map(msg => ({
+          role: msg.role,
+          parts: [{ text: msg.content }]
+        })),
+        { role: "user", parts: [{ text: input }] }
+      ];
+
+      console.log("Testi inviati a Gemini:", context.map(c => c.parts.map(p => p.text)).flat());
+      
+      const result = await ai.models.generateContent({
+        model: "gemini-2.0-flash",
+        contents: context,
+      });
+
+      console.log("Output text:", result.text);
+      const reply = result.text;
       setMessages((prev) => [...prev, { role: 'assistant', content: reply }]);
       setLoading(false);
-    }, 900);
+      console.log("Google Gemini API call finished.");
+    } catch (error) {
+      console.error("Error calling Google Gemini API:", error);
+      if (error.message) console.error("Error message:", error.message);
+      if (error.status) console.error("Error status:", error.status);
+    }
+
   };
 
   return (
@@ -247,7 +261,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 16,
     paddingVertical: 8,
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     backgroundColor: '#fff',
     borderRadius: 20,
     color: '#222',
