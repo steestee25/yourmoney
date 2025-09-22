@@ -6,11 +6,10 @@ import { BarChart } from "react-native-gifted-charts";
 export default function Index() {
 
   const [selectedValue, setSelectedValue] = useState(null);
-
   const [selectedIndex, setSelectedIndex] = useState(null);
-
   const [modalVisible, setModalVisible] = useState(false);
-
+  const [selectedDate, setSelectedDate] = useState(new Date()); // Default to today
+  const [showDatePicker, setShowDatePicker] = useState(false);
   // Form states
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("Clothing");
@@ -87,20 +86,38 @@ export default function Index() {
       color: categoryColors[newCategory],
     };
 
-    console.log(newTransaction);
-    const date = new Date(newTransaction['id']);    // Create Date object
+    //console.log(newTransaction);
+    //const date = new Date(newTransaction['id']);    // Create Date object
 
-    console.log(date.toString());        // Full readable date
-    console.log(date.toLocaleString());  // Local date & time
-    console.log(date.toLocaleDateString()); // Local date only
+    //console.log(date.toString());        // Full readable date
+    //console.log(date.toLocaleString());  // Local date & time
+    //console.log(date.toLocaleDateString()); // Local date only
 
+    const todayTimestamp = new Date();
+    todayTimestamp.setHours(0, 0, 0, 0); // Reset time to midnight
+    const todayId = todayTimestamp.getTime();
 
-    // For simplicity: add to the first date ("Today")
     setExpenseData((prev) => {
-      const updated = [...prev];
-      updated[0].transactions.unshift(newTransaction); // add at top
-      return updated;
+      // Check if today's entry exists
+      const existingDayIndex = prev.findIndex(day => day.id === todayId);
+
+      if (existingDayIndex >= 0) {
+        // Add transaction to existing day
+        const updated = [...prev];
+        updated[existingDayIndex].transactions.unshift(newTransaction);
+        return updated;
+      } else {
+        // Create new day entry
+        return [
+          {
+            id: todayId,
+            transactions: [newTransaction],
+          },
+          ...prev,
+        ];
+      }
     });
+
 
     // Reset + close modal
     setNewName("");
@@ -110,8 +127,7 @@ export default function Index() {
   };
 
   const [expenseData, setExpenseData] = useState([{
-    id: '1',
-    date: '1758532007480',
+    id: new Date('2025-09-22').setHours(0, 0, 0, 0),
     transactions: [
       {
         id: 't1',
@@ -125,8 +141,7 @@ export default function Index() {
     ]
   },
   {
-    id: '2',
-    date: '1757462400000',
+    id: new Date('2025-09-10').setHours(0, 0, 0, 0),
     transactions: [
       {
         id: 't2',
@@ -149,8 +164,7 @@ export default function Index() {
     ]
   },
   {
-    id: '3',
-    date: '1757030400000',
+    id: new Date('2025-09-5').setHours(0, 0, 0, 0),
     transactions: [
       {
         id: 't4',
@@ -212,7 +226,7 @@ export default function Index() {
   );
 
   const renderDaySection = ({ item: day }) => {
-    const date = new Date(Number(day.date));
+    const date = new Date(Number(day.id));
 
     // Convert timestamp string → Date → formatted string
     const formattedDate = date.toLocaleDateString('en-GB', {
@@ -284,7 +298,7 @@ export default function Index() {
         >
           <View style={styles.modalOverlay}>
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Add Transaction</Text>
+              <Text style={styles.modalTitle}>Transaction</Text>
 
               <TextInput
                 style={styles.input}
