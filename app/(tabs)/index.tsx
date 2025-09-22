@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
 export default function Index() {
@@ -8,6 +8,13 @@ export default function Index() {
   const [selectedValue, setSelectedValue] = useState(null);
 
   const [selectedIndex, setSelectedIndex] = useState(null);
+
+  const [modalVisible, setModalVisible] = useState(false);
+
+  // Form states
+  const [newName, setNewName] = useState("");
+  const [newCategory, setNewCategory] = useState("Clothing");
+  const [newAmount, setNewAmount] = useState("");
 
   const data = [
     { value: 50, label: 'Feb', frontColor: '#8fe8e7ff' },
@@ -21,142 +28,192 @@ export default function Index() {
     frontColor: selectedIndex === index ? '#ffffff' : item.frontColor,
   }));
 
-  // Mappatura colori per categoria
   const categoryColors = {
     'Clothing': '#4285F4',
-    'Electronics': '#34A853', 
-    'Transport': '#FBBC04',
+    'Electronics': '#34A853',
+    'Car': '#FBBC04',
     'Groceries': '#EA4335',
     'Entertainment': '#9333EA',
     'Food & Drink': '#10B981',
     'Shopping': '#FF6B35',
-    'Health & Fitness': '#8B5CF6'
+    'Health & Fitness': '#8B5CF6',
+    'Medicines': '#F44336',
+    'Travel': '#00B8D9',
+    'Bills': '#FFAB00',
+    'Dentist': '#00C853',
+    'Education': '#1976D2',
+    'Pets': '#FF8A65',
+    'Gifts': '#C51162',
+    'Medical Visits': '#009688',
+    'Phone': '#607D8B',
+    'Extras': '#7C4DFF',
+    'Restaurant': '#FF7043',
+    'Public Transport': '#388E3C',
   };
 
   const categoryIcons = {
     'Clothing': '👕',
     'Electronics': '📱',
-    'Transport': '🚗',
+    'Car': '🚗',
     'Groceries': '🛒',
     'Entertainment': '🎬',
     'Food & Drink': '☕',
     'Shopping': '📦',
     'Health & Fitness': '💪',
+    'Medicines': '💊',
+    'Travel': '✈️',
+    'Bills': '🧾',
+    'Dentist': '🦷',
+    'Education': '🎓',
+    'Pets': '🐾',
+    'Gifts': '🎁',
+    'Medical Visits': '🏥',
+    'Phone': '📞',
+    'Extras': '🛍️',
+    'Restaurant': '🍽️',
+    'Public Transport': '🚌',
   }
 
-  const expenseData = [
-    {
-      id: '1',
-      date: 'Today',
-      transactions: [
-        {
-          id: 't1',
-          name: 'Nike Store',
-          category: 'Clothing',
-          amount: -734.00,
-          tax: 60.35,
-          icon: categoryIcons['Clothing'],
-          color: categoryColors['Clothing']
-        }
-      ]
-    },
-    {
-      id: '2',  
-      date: '08 April',
-      transactions: [
-        {
-          id: 't2',
-          name: 'Apple Store',
-          category: 'Electronics',
-          amount: -25.00,
-          tax: 4.50,
-          icon: categoryIcons['Electronics'],
-          color: categoryColors['Electronics']
-        },
-        {
-          id: 't3',
-          name: 'Uber',
-          category: 'Transport',
-          amount: -4.99,
-          tax: 0.80,
-          icon: categoryIcons['Transport'],
-          color: categoryColors['Transport']
-        }
-      ]
-    },
-    {
-      id: '3',
-      date: '07 April',
-      transactions: [
-        {
-          id: 't4',
-          name: 'Supermarket',
-          category: 'Groceries',
-          amount: -87.50,
-          tax: 7.25,
-          icon: categoryIcons['Groceries'],
-          color: categoryColors['Groceries']
-        },
-        {
-          id: 't5',
-          name: 'Netflix',
-          category: 'Entertainment',
-          amount: -15.99,
-          tax: 2.40,
-          icon: categoryIcons['Entertainment'],
-          color: categoryColors['Entertainment']
-        }
-      ]
-    },
-    {
-      id: '4',
-      date: '06 April',
-      transactions: [
-        {
-          id: 't6',
-          name: 'Starbucks',
-          category: 'Food & Drink',
-          amount: -12.75,
-          tax: 1.90,
-          icon: categoryIcons['Food & Drink'],
-          color: categoryColors['Food & Drink']
-        },
-        {
-          id: 't7',
-          name: 'Gas Station',
-          category: 'Transport',
-          amount: -65.00,
-          tax: 5.20,
-          icon: categoryIcons['Transport'],
-          color: categoryColors['Transport']
-        }
-      ]
-    },
-    {
-      id: '5',
-      date: '05 April',
-      transactions: [
-        {
-          id: 't8',
-          name: 'Amazon',
-          category: 'Shopping',
-          amount: -43.20,
-          tax: 3.85,
-          icon: categoryIcons['Shopping'],
-          color: categoryColors['Shopping']
-        },
-        {
-          id: 't9',
-          name: 'Gym Membership',
-          category: 'Health & Fitness',
-          amount: -45.00,
-          tax: 0.00,
-          icon: categoryIcons['Health & Fitness'],
-          color: categoryColors['Health & Fitness']
-        }
-      ]
-    }
-  ];
+  // Function to add transaction
+  const handleAddTransaction = () => {
+    if (!newName || !newAmount) return;
+
+    const newTransaction = {
+      id: Date.now().toString(),
+      name: newName,
+      category: newCategory,
+      amount: -parseFloat(newAmount),
+      tax: 0,
+      icon: categoryIcons[newCategory],
+      color: categoryColors[newCategory],
+    };
+
+    // For simplicity: add to the first date ("Today")
+    setExpenseData((prev) => {
+      const updated = [...prev];
+      updated[0].transactions.unshift(newTransaction); // add at top
+      return updated;
+    });
+
+    // Reset + close modal
+    setNewName("");
+    setNewAmount("");
+    setNewCategory("Clothing");
+    setModalVisible(false);
+  };
+
+  const [expenseData, setExpenseData] = useState([{
+    id: '1',
+    date: 'Today',
+    transactions: [
+      {
+        id: 't1',
+        name: 'Nike Store',
+        category: 'Clothing',
+        amount: -734.00,
+        tax: 60.35,
+        icon: categoryIcons['Clothing'],
+        color: categoryColors['Clothing']
+      }
+    ]
+  },
+  {
+    id: '2',
+    date: '08 April',
+    transactions: [
+      {
+        id: 't2',
+        name: 'Apple Store',
+        category: 'Electronics',
+        amount: -25.00,
+        tax: 4.50,
+        icon: categoryIcons['Electronics'],
+        color: categoryColors['Electronics']
+      },
+      {
+        id: 't3',
+        name: 'Uber',
+        category: 'Car',
+        amount: -4.99,
+        tax: 0.80,
+        icon: categoryIcons['Car'],
+        color: categoryColors['Car']
+      }
+    ]
+  },
+  {
+    id: '3',
+    date: '07 April',
+    transactions: [
+      {
+        id: 't4',
+        name: 'Supermarket',
+        category: 'Groceries',
+        amount: -87.50,
+        tax: 7.25,
+        icon: categoryIcons['Groceries'],
+        color: categoryColors['Groceries']
+      },
+      {
+        id: 't5',
+        name: 'Netflix',
+        category: 'Entertainment',
+        amount: -15.99,
+        tax: 2.40,
+        icon: categoryIcons['Entertainment'],
+        color: categoryColors['Entertainment']
+      }
+    ]
+  },
+  {
+    id: '4',
+    date: '06 April',
+    transactions: [
+      {
+        id: 't6',
+        name: 'Starbucks',
+        category: 'Food & Drink',
+        amount: -12.75,
+        tax: 1.90,
+        icon: categoryIcons['Food & Drink'],
+        color: categoryColors['Food & Drink']
+      },
+      {
+        id: 't7',
+        name: 'Gas Station',
+        category: 'Car',
+        amount: -65.00,
+        tax: 5.20,
+        icon: categoryIcons['Car'],
+        color: categoryColors['Car']
+      }
+    ]
+  },
+  {
+    id: '5',
+    date: '05 April',
+    transactions: [
+      {
+        id: 't8',
+        name: 'Amazon',
+        category: 'Shopping',
+        amount: -43.20,
+        tax: 3.85,
+        icon: categoryIcons['Shopping'],
+        color: categoryColors['Shopping']
+      },
+      {
+        id: 't9',
+        name: 'Gym Membership',
+        category: 'Health & Fitness',
+        amount: -45.00,
+        tax: 0.00,
+        icon: categoryIcons['Health & Fitness'],
+        color: categoryColors['Health & Fitness']
+      }
+    ]
+  }
+  ]);
 
   // Calcolo del totale delle spese
   const totalOutcome = expenseData.reduce((total, day) => {
@@ -241,16 +298,89 @@ export default function Index() {
         />
       </View>
 
+      <View style={{ alignItems: 'center' }}>
+        <Modal
+          visible={modalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setModalVisible(false)}
+        >
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Add Transaction</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Transaction Name"
+                value={newName}
+                onChangeText={setNewName}
+              />
+
+              {/* Category Picker */}
+              <Text style={styles.label}>Category</Text>
+              <View style={styles.pickerContainer}>
+                <FlatList
+                  data={Object.keys(categoryIcons)}
+                  horizontal
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.categoryChip,
+                        newCategory === item && styles.categoryChipSelected,
+                      ]}
+                      onPress={() => setNewCategory(item)}
+                    >
+                      <Text
+                        style={[
+                          styles.categoryChipText,
+                          newCategory === item && styles.categoryChipTextSelected,
+                        ]}
+                      >
+                        {categoryIcons[item]} {item}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  keyExtractor={(item) => item}
+                  showsHorizontalScrollIndicator={false}
+                />
+              </View>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Amount (€)"
+                value={newAmount}
+                onChangeText={setNewAmount}
+                keyboardType="numeric"
+              />
+
+              <TouchableOpacity style={styles.addButton} onPress={handleAddTransaction}>
+                <Text style={styles.addButtonText}>Add</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.addButton, { backgroundColor: "#ccc", marginTop: 10 }]}
+                onPress={() => setModalVisible(false)}
+              >
+                <Text style={[styles.addButtonText, { color: "#333" }]}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </Modal>
+
+      </View>
+
       {/* FAB Button */}
       <View style={styles.fabContainer} pointerEvents="box-none">
         {/* FAB Assistente AI */}
-        <View style={[styles.fabButtonSmall, { marginBottom: 15 }]}> 
+        <View style={[styles.fabButtonSmall, { marginBottom: 15 }]}>
           <Ionicons name="chatbubble-ellipses-outline" size={32} color="#fff" />
         </View>
         {/* FAB Add */}
-        <View style={styles.fabButton}>
-          <Ionicons name="add" size={32} color="#fff" />
-        </View>
+        <TouchableOpacity
+          style={styles.fabButton}
+          onPress={() => setModalVisible(true)}
+        >         <Ionicons name="add" size={32} color="#fff" />
+        </TouchableOpacity>
       </View>
     </View>
   );
@@ -407,5 +537,69 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 4,
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: "rgba(0,0,0,0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  modalContent: {
+    width: "90%",
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 20,
+  },
+  modalTitle: {
+    fontSize: 22,
+    fontWeight: "bold",
+    marginBottom: 15,
+    textAlign: "center",
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 10,
+    padding: 10,
+    marginBottom: 15,
+  },
+  pickerContainer: {
+    marginBottom: 15,
+  },
+  categoryChip: {
+    borderWidth: 1,
+    borderColor: "#ddd",
+    borderRadius: 20,
+    paddingVertical: 6,
+    paddingHorizontal: 12,
+    marginRight: 10,
+    backgroundColor: "#f5f5f5",
+  },
+  categoryChipSelected: {
+    backgroundColor: "#00ECEC",
+    borderColor: "#00ECEC",
+  },
+  categoryChipText: {
+    fontSize: 14,
+    color: "#333",
+  },
+  categoryChipTextSelected: {
+    color: "#fff",
+  },
+  addButton: {
+    backgroundColor: "#00ECEC",
+    paddingVertical: 12,
+    borderRadius: 10,
+    alignItems: "center",
+  },
+  addButtonText: {
+    color: "#fff",
+    fontWeight: "bold",
+    fontSize: 16,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "600",
+    marginBottom: 5,
   },
 });
