@@ -79,14 +79,21 @@ export default function Index() {
     if (!newName || !newAmount) return;
 
     const newTransaction = {
-      id: Date.now().toString(),
+      id: Date.now(),
       name: newName,
       category: newCategory,
       amount: -parseFloat(newAmount),
-      tax: 0,
       icon: categoryIcons[newCategory],
       color: categoryColors[newCategory],
     };
+
+    console.log(newTransaction);
+    const date = new Date(newTransaction['id']);    // Create Date object
+
+    console.log(date.toString());        // Full readable date
+    console.log(date.toLocaleString());  // Local date & time
+    console.log(date.toLocaleDateString()); // Local date only
+
 
     // For simplicity: add to the first date ("Today")
     setExpenseData((prev) => {
@@ -104,7 +111,7 @@ export default function Index() {
 
   const [expenseData, setExpenseData] = useState([{
     id: '1',
-    date: 'Today',
+    date: '1758532007480',
     transactions: [
       {
         id: 't1',
@@ -119,7 +126,7 @@ export default function Index() {
   },
   {
     id: '2',
-    date: '08 April',
+    date: '1757462400000',
     transactions: [
       {
         id: 't2',
@@ -143,7 +150,7 @@ export default function Index() {
   },
   {
     id: '3',
-    date: '07 April',
+    date: '1757030400000',
     transactions: [
       {
         id: 't4',
@@ -165,54 +172,6 @@ export default function Index() {
       }
     ]
   },
-  {
-    id: '4',
-    date: '06 April',
-    transactions: [
-      {
-        id: 't6',
-        name: 'Starbucks',
-        category: 'Food & Drink',
-        amount: -12.75,
-        tax: 1.90,
-        icon: categoryIcons['Food & Drink'],
-        color: categoryColors['Food & Drink']
-      },
-      {
-        id: 't7',
-        name: 'Gas Station',
-        category: 'Car',
-        amount: -65.00,
-        tax: 5.20,
-        icon: categoryIcons['Car'],
-        color: categoryColors['Car']
-      }
-    ]
-  },
-  {
-    id: '5',
-    date: '05 April',
-    transactions: [
-      {
-        id: 't8',
-        name: 'Amazon',
-        category: 'Shopping',
-        amount: -43.20,
-        tax: 3.85,
-        icon: categoryIcons['Shopping'],
-        color: categoryColors['Shopping']
-      },
-      {
-        id: 't9',
-        name: 'Gym Membership',
-        category: 'Health & Fitness',
-        amount: -45.00,
-        tax: 0.00,
-        icon: categoryIcons['Health & Fitness'],
-        color: categoryColors['Health & Fitness']
-      }
-    ]
-  }
   ]);
 
   // Calcolo del totale delle spese
@@ -252,16 +211,34 @@ export default function Index() {
     </View>
   );
 
-  const renderDaySection = ({ item: day }) => (
-    <View style={styles.daySection}>
-      <Text style={styles.dayHeader}>{day.date}</Text>
-      {day.transactions.map((transaction) => (
-        <View key={transaction.id}>
-          {renderTransactionItem({ item: transaction })}
-        </View>
-      ))}
-    </View>
-  );
+  const renderDaySection = ({ item: day }) => {
+    const date = new Date(Number(day.date));
+
+    // Convert timestamp string → Date → formatted string
+    const formattedDate = date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: 'long',
+      year: 'numeric',
+    });
+
+    // Get today's date (without time)
+    const today = new Date();
+    const isToday =
+      date.getDate() === today.getDate() &&
+      date.getMonth() === today.getMonth() &&
+      date.getFullYear() === today.getFullYear();
+
+    return (
+      <View style={styles.daySection}>
+        <Text style={styles.dayHeader}>{isToday ? 'Today' : formattedDate}</Text>
+        {day.transactions.map((transaction) => (
+          <View key={transaction.id}>
+            {renderTransactionItem({ item: transaction })}
+          </View>
+        ))}
+      </View>
+    );
+  };
 
   return (
     <View style={styles.container}>
