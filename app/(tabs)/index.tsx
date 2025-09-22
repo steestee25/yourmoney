@@ -33,6 +33,17 @@ export default function Index() {
     'Health & Fitness': '#8B5CF6'
   };
 
+  const categoryIcons = {
+    'Clothing': '👕',
+    'Electronics': '📱',
+    'Transport': '🚗',
+    'Groceries': '🛒',
+    'Entertainment': '🎬',
+    'Food & Drink': '☕',
+    'Shopping': '📦',
+    'Health & Fitness': '💪',
+  }
+
   const expenseData = [
     {
       id: '1',
@@ -44,7 +55,7 @@ export default function Index() {
           category: 'Clothing',
           amount: -734.00,
           tax: 60.35,
-          icon: '👕',
+          icon: categoryIcons['Clothing'],
           color: categoryColors['Clothing']
         }
       ]
@@ -59,7 +70,7 @@ export default function Index() {
           category: 'Electronics',
           amount: -25.00,
           tax: 4.50,
-          icon: '📱',
+          icon: categoryIcons['Electronics'],
           color: categoryColors['Electronics']
         },
         {
@@ -68,7 +79,7 @@ export default function Index() {
           category: 'Transport',
           amount: -4.99,
           tax: 0.80,
-          icon: '🚗',
+          icon: categoryIcons['Transport'],
           color: categoryColors['Transport']
         }
       ]
@@ -83,7 +94,7 @@ export default function Index() {
           category: 'Groceries',
           amount: -87.50,
           tax: 7.25,
-          icon: '🛒',
+          icon: categoryIcons['Groceries'],
           color: categoryColors['Groceries']
         },
         {
@@ -92,7 +103,7 @@ export default function Index() {
           category: 'Entertainment',
           amount: -15.99,
           tax: 2.40,
-          icon: '🎬',
+          icon: categoryIcons['Entertainment'],
           color: categoryColors['Entertainment']
         }
       ]
@@ -107,7 +118,7 @@ export default function Index() {
           category: 'Food & Drink',
           amount: -12.75,
           tax: 1.90,
-          icon: '☕',
+          icon: categoryIcons['Food & Drink'],
           color: categoryColors['Food & Drink']
         },
         {
@@ -116,7 +127,7 @@ export default function Index() {
           category: 'Transport',
           amount: -65.00,
           tax: 5.20,
-          icon: '⛽',
+          icon: categoryIcons['Transport'],
           color: categoryColors['Transport']
         }
       ]
@@ -131,7 +142,7 @@ export default function Index() {
           category: 'Shopping',
           amount: -43.20,
           tax: 3.85,
-          icon: '📦',
+          icon: categoryIcons['Shopping'],
           color: categoryColors['Shopping']
         },
         {
@@ -140,7 +151,7 @@ export default function Index() {
           category: 'Health & Fitness',
           amount: -45.00,
           tax: 0.00,
-          icon: '💪',
+          icon: categoryIcons['Health & Fitness'],
           color: categoryColors['Health & Fitness']
         }
       ]
