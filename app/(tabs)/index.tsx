@@ -843,7 +843,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
   chooseDateButton: {
-    backgroundColor: '#00ECEC',
+    backgroundColor: '#87efefff',
     paddingVertical: 10,
     paddingHorizontal: 15,
     borderRadius: 10,
@@ -852,7 +852,7 @@ const styles = StyleSheet.create({
   },
   chooseDateButtonText: {
     color: '#fff',
-    fontWeight: '600',
+    fontWeight: 'bold',
     fontSize: 14,
   },
 
