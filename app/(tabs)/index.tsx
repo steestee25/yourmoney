@@ -2,6 +2,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
 import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
+import DatePicker from 'react-native-ui-datepicker';
 
 export default function Index() {
 
@@ -78,7 +79,7 @@ export default function Index() {
     if (!newName || !newAmount) return;
 
     const newTransaction = {
-      id: Date.now(),
+      id: selectedDate.getTime().toString(),
       name: newName,
       category: newCategory,
       amount: -parseFloat(newAmount),
@@ -86,31 +87,22 @@ export default function Index() {
       color: categoryColors[newCategory],
     };
 
-    //console.log(newTransaction);
-    //const date = new Date(newTransaction['id']);    // Create Date object
-
-    //console.log(date.toString());        // Full readable date
-    //console.log(date.toLocaleString());  // Local date & time
-    //console.log(date.toLocaleDateString()); // Local date only
-
-    const todayTimestamp = new Date();
-    todayTimestamp.setHours(0, 0, 0, 0); // Reset time to midnight
-    const todayId = todayTimestamp.getTime();
+    // build dayId from selectedDate
+    const dayTimestamp = new Date(selectedDate);
+    dayTimestamp.setHours(0, 0, 0, 0);
+    const dayId = dayTimestamp.getTime();
 
     setExpenseData((prev) => {
-      // Check if today's entry exists
-      const existingDayIndex = prev.findIndex(day => day.id === todayId);
+      const existingDayIndex = prev.findIndex(day => day.id === dayId);
 
       if (existingDayIndex >= 0) {
-        // Add transaction to existing day
         const updated = [...prev];
         updated[existingDayIndex].transactions.unshift(newTransaction);
         return updated;
       } else {
-        // Create new day entry
         return [
           {
-            id: todayId,
+            id: dayId,
             transactions: [newTransaction],
           },
           ...prev,
@@ -118,12 +110,13 @@ export default function Index() {
       }
     });
 
-
     // Reset + close modal
     setNewName("");
     setNewAmount("");
     setNewCategory("Clothing");
     setModalVisible(false);
+    setShowDatePicker(false);
+    setSelectedDate(new Date());
   };
 
   const [expenseData, setExpenseData] = useState([{
@@ -346,6 +339,41 @@ export default function Index() {
                 onChangeText={setNewAmount}
                 keyboardType="numeric"
               />
+
+              {/* Date Picker */}
+              <Text style={styles.label}>Date</Text>
+              {!showDatePicker && (
+                <TouchableOpacity
+                  style={styles.chooseDateButton}
+                  onPress={() => setShowDatePicker(true)}
+                >
+                  <Text style={styles.chooseDateButtonText}>
+                    Choose Date ({selectedDate.toLocaleDateString('en-GB')})
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* DatePicker visible only when showDatePicker = true */}
+              {showDatePicker && (
+                <DatePicker
+                  mode="single"
+                  date={selectedDate}
+                  firstDayOfWeek={1}
+                  onChange={({ date }) => {
+                    // If date is Dayjs → convert to JS Date
+                    if (date && typeof date.toDate === 'function') {
+                      setSelectedDate(date.toDate());
+                    } else {
+                      setSelectedDate(date);
+                    }
+                  }}
+
+                  styles={{
+                    selected: { backgroundColor: '#b3f0f0ff', borderColor: 'rgba(102, 235, 235, 1)', borderWidth: 1, borderRadius: 100 }, // Highlight the selected day
+                    selected_label: { color: 'white', fontWeight: 'bold' }, // Highlight the selected day label
+                  }}
+                />
+              )}
 
               <View style={styles.modalButtonRow}>
                 <TouchableOpacity style={styles.modalCancelCompact} onPress={() => setModalVisible(false)} activeOpacity={0.7}>
@@ -602,7 +630,6 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginTop: 15,
   },
-
   modalAddCompact: {
     flex: 1,
     backgroundColor: '#00ECEC',
@@ -616,13 +643,11 @@ const styles = StyleSheet.create({
     shadowRadius: 3,
     elevation: 3,
   },
-
   modalAddCompactText: {
     color: '#fff',
     fontWeight: '600',
     fontSize: 14,
   },
-
   modalCancelCompact: {
     flex: 1,
     backgroundColor: '#f0f0f0',
@@ -635,9 +660,21 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 2,
   },
-
   modalCancelCompactText: {
     color: '#555',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+  chooseDateButton: {
+    backgroundColor: '#00ECEC',
+    paddingVertical: 10,
+    paddingHorizontal: 15,
+    borderRadius: 10,
+    alignItems: 'center',
+    marginBottom: 15,
+  },
+  chooseDateButtonText: {
+    color: '#fff',
     fontWeight: '600',
     fontSize: 14,
   },
