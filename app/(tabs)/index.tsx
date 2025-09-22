@@ -11,10 +11,17 @@ export default function Index() {
   const [modalVisible, setModalVisible] = useState(false);
   const [selectedDate, setSelectedDate] = useState(new Date()); // Default to today
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showEditDatePicker, setShowEditDatePicker] = useState(false);
+
   // Form states
   const [newName, setNewName] = useState("");
   const [newCategory, setNewCategory] = useState("Clothing");
   const [newAmount, setNewAmount] = useState("");
+
+  // Form states (for update)
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [editingTransaction, setEditingTransaction] = useState(null);
+  const [editingDayId, setEditingDayId] = useState(null);
 
   const data = [
     { value: 50, label: 'Feb', frontColor: '#8fe8e7ff' },
@@ -201,21 +208,30 @@ export default function Index() {
     }
   };
 
-  const renderTransactionItem = ({ item: transaction }) => (
-    <View style={styles.transactionItem}>
-      <View style={styles.transactionLeft}>
-        <View style={[styles.transactionIcon, { backgroundColor: transaction.color + '20' }]}>
-          <Text style={styles.transactionEmoji}>{transaction.icon}</Text>
+  const renderTransactionItem = ({ item: transaction, dayId }) => (
+    <TouchableOpacity
+      onPress={() => {
+        setEditingTransaction({ ...transaction });
+        setEditingDayId(dayId);
+        setEditModalVisible(true);
+      }}
+      activeOpacity={0.7}
+    >
+      <View style={styles.transactionItem}>
+        <View style={styles.transactionLeft}>
+          <View style={[styles.transactionIcon, { backgroundColor: transaction.color + '20' }]}>
+            <Text style={styles.transactionEmoji}>{transaction.icon}</Text>
+          </View>
+          <View>
+            <Text style={styles.transactionName}>{transaction.name}</Text>
+            <Text style={styles.transactionCategory}>{transaction.category}</Text>
+          </View>
         </View>
-        <View>
-          <Text style={styles.transactionName}>{transaction.name}</Text>
-          <Text style={styles.transactionCategory}>{transaction.category}</Text>
+        <View style={styles.transactionRight}>
+          <Text style={styles.transactionAmount}>−€{Math.abs(transaction.amount).toFixed(2)}</Text>
         </View>
       </View>
-      <View style={styles.transactionRight}>
-        <Text style={styles.transactionAmount}>−€{Math.abs(transaction.amount).toFixed(2)}</Text>
-      </View>
-    </View>
+    </TouchableOpacity>
   );
 
   const renderDaySection = ({ item: day }) => {
@@ -240,7 +256,7 @@ export default function Index() {
         <Text style={styles.dayHeader}>{isToday ? 'Today' : formattedDate}</Text>
         {day.transactions.map((transaction) => (
           <View key={transaction.id}>
-            {renderTransactionItem({ item: transaction })}
+            {renderTransactionItem({ item: transaction, dayId: day.id })}
           </View>
         ))}
       </View>
@@ -387,9 +403,164 @@ export default function Index() {
                 <TouchableOpacity style={styles.modalAddCompact} onPress={handleAddTransaction} activeOpacity={0.7}>
                   <Text style={styles.modalAddCompactText}>Add</Text>
                 </TouchableOpacity>
+              </View>
+            </View>
+          </ScrollView>
+        </Modal>
+      </View>
 
+      <View style={{ alignItems: 'center' }}>
+        <Modal
+          visible={editModalVisible}
+          transparent={true}
+          animationType="slide"
+          onRequestClose={() => setEditModalVisible(false)}
+        >
+          <ScrollView
+            style={styles.modalOverlay}
+            contentContainerStyle={styles.modalOverlayContent}
+          >
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Edit Transaction</Text>
+
+              <TextInput
+                style={styles.input}
+                placeholder="Transaction Name"
+                value={editingTransaction?.name || ''}
+                onChangeText={(text) =>
+                  setEditingTransaction((prev) => ({ ...prev, name: text }))
+                }
+              />
+
+              {/* Category Picker */}
+              <Text style={styles.label}>Category</Text>
+              <View style={styles.pickerContainer}>
+                <FlatList
+                  data={Object.keys(categoryIcons)}
+                  horizontal
+                  renderItem={({ item }) => (
+                    <TouchableOpacity
+                      style={[
+                        styles.categoryChip,
+                        editingTransaction?.category === item && {
+                          backgroundColor: categoryColors[item] + 45,
+                          borderColor: categoryColors[item] + 90,
+                        },
+                      ]}
+                      onPress={() =>
+                        setEditingTransaction((prev) => ({
+                          ...prev,
+                          category: item,
+                          icon: categoryIcons[item],
+                          color: categoryColors[item],
+                        }))
+                      }
+                    >
+                      <Text
+                        style={[
+                          styles.categoryChipText,
+                          editingTransaction?.category === item && styles.categoryChipTextSelected,
+                        ]}
+                      >
+                        {categoryIcons[item]} {item}
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                  keyExtractor={(item) => item}
+                  showsHorizontalScrollIndicator={false}
+                />
               </View>
 
+              <TextInput
+                style={styles.input}
+                placeholder="Amount (€)"
+                value={editingTransaction ? Math.abs(editingTransaction.amount).toString() : ''}
+                onChangeText={(text) =>
+                  setEditingTransaction((prev) => ({
+                    ...prev,
+                    amount: -parseFloat(text || 0),
+                  }))
+                }
+                keyboardType="numeric"
+              />
+
+              {/* Show button if date picker is hidden */}
+              {!showEditDatePicker && (
+                <TouchableOpacity
+                  style={styles.chooseDateButton}
+                  onPress={() => setShowEditDatePicker(true)}
+                >
+                  <Text style={styles.chooseDateButtonText}>
+                    Choose Date ({editingTransaction ? new Date(editingDayId).toLocaleDateString('en-GB') : ''})
+                  </Text>
+                </TouchableOpacity>
+              )}
+
+              {/* Show DatePicker only when showEditDatePicker = true */}
+              {showEditDatePicker && (
+                <DatePicker
+                  mode="single"
+                  date={editingTransaction ? new Date(editingDayId) : new Date()}
+                  firstDayOfWeek={1}
+                  onChange={({ date }) => {
+                    if (!date) return;
+                    // Update the day ID where this transaction will be placed
+                    const newDayId = new Date(date);
+                    newDayId.setHours(0, 0, 0, 0);
+                    setEditingDayId(newDayId.getTime());
+                  }}
+                  styles={{
+                    selected: { backgroundColor: '#b3f0f0ff', borderColor: 'rgba(102, 235, 235, 1)', borderWidth: 1, borderRadius: 100 },
+                    selected_label: { color: 'white', fontWeight: 'bold' },
+                  }}
+                />
+              )}
+
+              <View style={styles.modalButtonRow}>
+                <TouchableOpacity
+                  style={styles.modalCancelCompact}
+                  onPress={() => setEditModalVisible(false)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.modalCancelCompactText}>Cancel</Text>
+                </TouchableOpacity>
+
+                <TouchableOpacity
+                  style={styles.modalAddCompact}
+                  onPress={() => {
+                    // Save changes
+                    setExpenseData((prev) => {
+                      // Remove transaction from old day
+                      let updatedData = prev.map((day) => ({
+                        ...day,
+                        transactions: day.transactions.filter((t) => t.id !== editingTransaction.id),
+                      }));
+
+                      // Remove any day that became empty
+                      updatedData = updatedData.filter(day => day.transactions.length > 0);
+
+                      // Add transaction to the new day
+                      const existingDayIndex = updatedData.findIndex(day => day.id === editingDayId);
+                      if (existingDayIndex >= 0) {
+                        updatedData[existingDayIndex].transactions.unshift(editingTransaction);
+                      } else {
+                        updatedData.unshift({
+                          id: editingDayId,
+                          transactions: [editingTransaction],
+                        });
+                      }
+
+                      return updatedData;
+                    });
+
+                    setEditModalVisible(false);
+                    setShowEditDatePicker(false);
+                  }}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.modalAddCompactText}>Save</Text>
+                </TouchableOpacity>
+              </View>
             </View>
           </ScrollView>
         </Modal>
