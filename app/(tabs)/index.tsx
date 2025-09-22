@@ -303,7 +303,10 @@ export default function Index() {
                     <TouchableOpacity
                       style={[
                         styles.categoryChip,
-                        newCategory === item && styles.categoryChipSelected,
+                        newCategory === item && {
+                          backgroundColor: categoryColors[item] + 45,
+                          borderColor: categoryColors[item] + 90
+                        },
                       ]}
                       onPress={() => setNewCategory(item)}
                     >
@@ -330,16 +333,17 @@ export default function Index() {
                 keyboardType="numeric"
               />
 
-              <TouchableOpacity style={styles.addButton} onPress={handleAddTransaction}>
-                <Text style={styles.addButtonText}>Add</Text>
-              </TouchableOpacity>
+              <View style={styles.modalButtonRow}>
+                <TouchableOpacity style={styles.modalCancelCompact} onPress={() => setModalVisible(false)} activeOpacity={0.7}>
+                  <Text style={styles.modalCancelCompactText}>Cancel</Text>
+                </TouchableOpacity>
 
-              <TouchableOpacity
-                style={[styles.addButton, { backgroundColor: "#ccc", marginTop: 10 }]}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={[styles.addButtonText, { color: "#333" }]}>Cancel</Text>
-              </TouchableOpacity>
+                <TouchableOpacity style={styles.modalAddCompact} onPress={handleAddTransaction} activeOpacity={0.7}>
+                  <Text style={styles.modalAddCompactText}>Add</Text>
+                </TouchableOpacity>
+
+              </View>
+
             </View>
           </View>
         </Modal>
@@ -555,16 +559,13 @@ const styles = StyleSheet.create({
     marginRight: 10,
     backgroundColor: "#f5f5f5",
   },
-  categoryChipSelected: {
-    backgroundColor: "#00ECEC",
-    borderColor: "#00ECEC",
-  },
   categoryChipText: {
     fontSize: 14,
     color: "#333",
   },
   categoryChipTextSelected: {
     color: "#fff",
+    fontWeight: "bold",
   },
   addButton: {
     backgroundColor: "#00ECEC",
@@ -582,4 +583,49 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     marginBottom: 5,
   },
+  modalButtonRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: 15,
+  },
+
+  modalAddCompact: {
+    flex: 1,
+    backgroundColor: '#00ECEC',
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    marginLeft: 8,
+    shadowColor: '#00ECEC',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+
+  modalAddCompactText: {
+    color: '#fff',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+
+  modalCancelCompact: {
+    flex: 1,
+    backgroundColor: '#f0f0f0',
+    paddingVertical: 10,
+    borderRadius: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+
+  modalCancelCompactText: {
+    color: '#555',
+    fontWeight: '600',
+    fontSize: 14,
+  },
+
 });
