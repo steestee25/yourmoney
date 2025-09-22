@@ -356,7 +356,10 @@ export default function Index() {
         <TouchableOpacity
           style={styles.fabButton}
           onPress={() => setModalVisible(true)}
-        >         <Ionicons name="add" size={32} color="#fff" />
+        >
+          <Text>
+            <Ionicons name="add" size={32} color="#fff" />
+          </Text>
         </TouchableOpacity>
       </View>
     </View>
