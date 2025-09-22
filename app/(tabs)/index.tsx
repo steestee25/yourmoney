@@ -1,6 +1,6 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { FlatList, Modal, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 import DatePicker from 'react-native-ui-datepicker';
 
@@ -289,7 +289,10 @@ export default function Index() {
           animationType="slide"
           onRequestClose={() => setModalVisible(false)}
         >
-          <View style={styles.modalOverlay}>
+          <ScrollView
+            style={styles.modalOverlay}
+            contentContainerStyle={styles.modalOverlayContent}
+          >
             <View style={styles.modalContent}>
               <Text style={styles.modalTitle}>Transaction</Text>
 
@@ -359,14 +362,15 @@ export default function Index() {
                   mode="single"
                   date={selectedDate}
                   firstDayOfWeek={1}
-                  onChange={({ date }) => {
+                  /*onChange={({ date }) => {
                     // If date is Dayjs → convert to JS Date
                     if (date && typeof date.toDate === 'function') {
                       setSelectedDate(date.toDate());
                     } else {
                       setSelectedDate(date);
                     }
-                  }}
+                  }}*/
+                  onChange={({ date }) => setSelectedDate(date)}
 
                   styles={{
                     selected: { backgroundColor: '#b3f0f0ff', borderColor: 'rgba(102, 235, 235, 1)', borderWidth: 1, borderRadius: 100 }, // Highlight the selected day
@@ -387,7 +391,7 @@ export default function Index() {
               </View>
 
             </View>
-          </View>
+          </ScrollView>
         </Modal>
 
       </View>
@@ -550,7 +554,6 @@ const styles = StyleSheet.create({
     elevation: 4,
     marginRight: 6,
   },
-
   fabButton: {
     backgroundColor: '#00ECEC',
     width: 64,
@@ -567,6 +570,9 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.5)",
+  },
+  modalOverlayContent: {
+    flexGrow: 1,
     justifyContent: "center",
     alignItems: "center",
   },
