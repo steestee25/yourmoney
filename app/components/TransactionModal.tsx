@@ -3,23 +3,22 @@ import React, { useEffect, useState } from "react";
 import { FlatList, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 
+import styles from "../../styles/components/transactionModal.styles";
 export default function TransactionModal({
     visible,
-    mode = "add", // "add" or "edit"
+    mode = "add",
     transaction = null,
     onSave,
     onCancel,
     categoryIcons,
     categoryColors,
 }) {
-    // local state for form fields
     const [name, setName] = useState("");
     const [category, setCategory] = useState("Clothing");
     const [amount, setAmount] = useState("");
     const [date, setDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
 
-    // When transaction changes → prefill fields
     useEffect(() => {
         if (transaction) {
             setName(transaction.name);
@@ -53,23 +52,13 @@ export default function TransactionModal({
 
     return (
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onCancel}>
-            <ScrollView
-                style={{ flex: 1, backgroundColor: "rgba(0,0,0,0.5)" }}
-                contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}
-            >
-                <View style={{ width: "90%", backgroundColor: "#fff", borderRadius: 20, padding: 20 }}>
-                    <Text style={{ fontSize: 22, fontWeight: "bold", marginBottom: 15, textAlign: "center" }}>
-                        {mode === "add" ? "Add Transaction" : "Edit Transaction"}
-                    </Text>
+            <ScrollView style={styles.modalBackground} contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}>
+                <View style={styles.modalContainer}>
+                    <Text style={styles.title}>{mode === "add" ? "Add Transaction" : "Edit Transaction"}</Text>
 
-                    <TextInput
-                        style={{ borderWidth: 1, borderColor: "#ddd", borderRadius: 10, padding: 10, marginBottom: 15 }}
-                        placeholder="Transaction Name"
-                        value={name}
-                        onChangeText={setName}
-                    />
+                    <TextInput style={styles.input} placeholder="Transaction Name" value={name} onChangeText={setName} />
 
-                    <Text style={{ fontSize: 16, fontWeight: "600", marginBottom: 5 }}>Category</Text>
+                    <Text style={styles.label}>Category</Text>
                     <FlatList
                         style={{ marginBottom: 15 }}
                         data={Object.keys(categoryIcons)}
@@ -77,15 +66,7 @@ export default function TransactionModal({
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 style={[
-                                    {
-                                        borderWidth: 1,
-                                        borderColor: "#ddd",
-                                        borderRadius: 20,
-                                        paddingVertical: 6,
-                                        paddingHorizontal: 12,
-                                        marginRight: 10,
-                                        backgroundColor: "#f5f5f5",
-                                    },
+                                    styles.categoryItem,
                                     category === item && {
                                         backgroundColor: categoryColors[item] + 45,
                                         borderColor: categoryColors[item] + 90,
@@ -93,12 +74,7 @@ export default function TransactionModal({
                                 ]}
                                 onPress={() => setCategory(item)}
                             >
-                                <Text
-                                    style={[
-                                        { fontSize: 14, color: "#333" },
-                                        category === item && { color: "#fff", fontWeight: "bold" },
-                                    ]}
-                                >
+                                <Text style={[{ fontSize: 14, color: "#333" }, category === item && styles.categoryItemSelected]}>
                                     {categoryIcons[item]} {item}
                                 </Text>
                             </TouchableOpacity>
@@ -107,17 +83,10 @@ export default function TransactionModal({
                         showsHorizontalScrollIndicator={false}
                     />
 
-                    <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 15 }}>
-                        <Text style={{ fontSize: 16, fontWeight: "600", marginRight: 10, width: 180 }}>Amount (€)</Text>
+                    <View style={styles.amountRow}>
+                        <Text style={styles.amountLabel}>Amount (€)</Text>
                         <TextInput
-                            style={{
-                                flex: 1,
-                                borderWidth: 1,
-                                borderColor: "#ddd",
-                                borderRadius: 10,
-                                padding: 10,
-                                textAlign: "center",
-                            }}
+                            style={styles.amountInput}
                             placeholder="€"
                             value={amount}
                             onChangeText={setAmount}
@@ -126,26 +95,13 @@ export default function TransactionModal({
                     </View>
 
                     <View style={{ marginBottom: 15 }}>
-                        <View style={{ flexDirection: "row", alignItems: "center", marginBottom: 5 }}>
-                            <Text style={{ fontSize: 16, fontWeight: "600", marginRight: 10, width: 180 }}>Date</Text>
-                            <TouchableOpacity
-                                style={{
-                                    flex: 1,
-                                    backgroundColor: "#87efefff",
-                                    paddingVertical: 10,
-                                    paddingHorizontal: 15,
-                                    borderRadius: 10,
-                                    alignItems: "center",
-                                }}
-                                onPress={() => setShowDatePicker(true)}
-                            >
-                                <Text style={{ color: "#fff", fontWeight: "bold", fontSize: 14 }}>
-                                    {date.toLocaleDateString("en-GB")}
-                                </Text>
+                        <View style={styles.dateRow}>
+                            <Text style={styles.amountLabel}>Date</Text>
+                            <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+                                <Text style={styles.dateButtonText}>{date.toLocaleDateString("en-GB")}</Text>
                             </TouchableOpacity>
                         </View>
 
-                        {/* DatePicker appears below the row */}
                         {showDatePicker && (
                             <DatePicker
                                 mode="single"
@@ -153,7 +109,7 @@ export default function TransactionModal({
                                 firstDayOfWeek={1}
                                 onChange={({ date }) => {
                                     setDate(date);
-                                    setShowDatePicker(false); // close picker after selecting
+                                    setShowDatePicker(false);
                                 }}
                                 styles={{
                                     selected: {
@@ -168,34 +124,13 @@ export default function TransactionModal({
                         )}
                     </View>
 
-                    <View style={{ flexDirection: "row", justifyContent: "space-between", marginTop: 15 }}>
-                        <TouchableOpacity
-                            style={{
-                                flex: 1,
-                                backgroundColor: "#f0f0f0",
-                                paddingVertical: 10,
-                                borderRadius: 20,
-                                alignItems: "center",
-                                marginRight: 8,
-                            }}
-                            onPress={onCancel}
-                        >
-                            <Text style={{ color: "#555", fontWeight: "600", fontSize: 14 }}>Cancel</Text>
+                    <View style={styles.actionRow}>
+                        <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+                            <Text style={styles.cancelButtonText}>Cancel</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity
-                            style={{
-                                flex: 1,
-                                backgroundColor: "#00ECEC",
-                                paddingVertical: 10,
-                                borderRadius: 20,
-                                alignItems: "center",
-                            }}
-                            onPress={handleSave}
-                        >
-                            <Text style={{ color: "#fff", fontWeight: "600", fontSize: 14 }}>
-                                {mode === "add" ? "Add" : "Save"}
-                            </Text>
+                        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                            <Text style={styles.saveButtonText}>{mode === "add" ? "Add" : "Save"}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
