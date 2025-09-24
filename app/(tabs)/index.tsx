@@ -11,14 +11,6 @@ export default function Index() {
   const [selectedValue, setSelectedValue] = useState(null);
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [modalVisible, setModalVisible] = useState(false);
-  const [selectedDate, setSelectedDate] = useState(new Date()); // Default to today
-  const [showDatePicker, setShowDatePicker] = useState(false);
-  const [showEditDatePicker, setShowEditDatePicker] = useState(false);
-
-  // Form states
-  const [newName, setNewName] = useState("");
-  const [newCategory, setNewCategory] = useState("Clothing");
-  const [newAmount, setNewAmount] = useState("");
 
   // Form states (for update)
   const [editModalVisible, setEditModalVisible] = useState(false);
@@ -83,7 +75,7 @@ export default function Index() {
     'Public Transport': '🚌',
   }
 
-  // always sort days descending after updates
+  // Always sort days descending after updates
   const sortDaysDescending = (days) =>
     [...days].sort((a, b) => b.id - a.id);
 
@@ -114,7 +106,6 @@ export default function Index() {
     setModalVisible(false);
   };
 
-
   // EDIT transaction
   const handleEditTransaction = (updatedTransaction) => {
     const dayTimestamp = new Date(updatedTransaction.date);
@@ -124,7 +115,7 @@ export default function Index() {
     setExpenseData((prev) => {
       let updatedDays = [...prev];
 
-      // find old transaction
+      // Find old transaction
       let oldDayIndex = -1;
       let transactionIndex = -1;
 
@@ -139,23 +130,23 @@ export default function Index() {
       });
 
       if (oldDayIndex === -1 || transactionIndex === -1) {
-        return prev; // not found
+        return prev; // Not found
       }
 
-      // same day → just replace
+      // Same day → just replace
       if (updatedDays[oldDayIndex].id === newDayId) {
         updatedDays[oldDayIndex].transactions[transactionIndex] =
           updatedTransaction;
         return sortDaysDescending(updatedDays);
       }
 
-      // date changed → remove from old day
+      // Date changed → remove from old day
       updatedDays[oldDayIndex].transactions.splice(transactionIndex, 1);
       if (updatedDays[oldDayIndex].transactions.length === 0) {
         updatedDays.splice(oldDayIndex, 1);
       }
 
-      // add to new day
+      // Add to new day
       const newDayIndex = updatedDays.findIndex((d) => d.id === newDayId);
       if (newDayIndex !== -1) {
         updatedDays[newDayIndex].transactions.unshift(updatedTransaction);
@@ -233,14 +224,6 @@ export default function Index() {
     ]
   },
   ]);
-
-  // Calcolo del totale delle spese
-  const totalOutcome = expenseData.reduce((total, day) => {
-    return total + day.transactions.reduce((dayTotal, transaction) => {
-      return dayTotal + Math.abs(transaction.amount);
-    }, 0);
-  }, 0);
-
 
   const handleBarPress = (item, index) => {
     if (selectedIndex === index) {
