@@ -1,5 +1,6 @@
 import { Entypo } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import Octicons from '@expo/vector-icons/Octicons';
 import { Tabs, useRouter } from 'expo-router';
 import { TouchableOpacity, View } from "react-native";
 
@@ -15,7 +16,7 @@ export default function TabLayout() {
     return (
         <Tabs
             screenOptions={{
-                tabBarActiveTintColor: '#007bff',
+                tabBarActiveTintColor: '#9CF1F0',
                 headerStyle: {
                     backgroundColor: '#fff',
                 },
@@ -30,7 +31,7 @@ export default function TabLayout() {
                     shadowColor: '#000',
                 },
                 tabBarIconStyle: {
-                    marginTop: 10, 
+                    marginTop: 12.5, 
                 },
 
             }}
@@ -39,7 +40,7 @@ export default function TabLayout() {
                 options={{
                     title: '',
                     tabBarIcon: ({ color, focused }) => (
-                        <Ionicons name={focused ? 'home-sharp' : 'home-outline'} color={color} size={24} />
+                        <Octicons name={focused ? 'home-fill' : 'home'} color={color} size={24} />
                     ),
                     headerShown: false,
                 }} />
@@ -76,6 +77,16 @@ export default function TabLayout() {
                     ),
                     tabBarStyle: { display: 'none' },
                 }} />
+
+            <Tabs.Screen
+                name="advices"
+                options={{
+                    title: '',
+                    tabBarIcon: ({ color, focused }) => (
+                        <Ionicons name={focused ? 'sparkles' : 'sparkles-outline'} color={color} size={24} />
+                    ),
+                }}
+            />
 
             <Tabs.Screen
                 name="about"
