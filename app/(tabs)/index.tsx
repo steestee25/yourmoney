@@ -1,8 +1,9 @@
 import { Ionicons } from "@expo/vector-icons";
 import { useState } from "react";
-import { FlatList, Modal, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from "react-native";
+import { FlatList, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
-import DatePicker from 'react-native-ui-datepicker';
+
+import TransactionModal from "../components/TransactionModal";
 
 export default function Index() {
 
@@ -81,49 +82,93 @@ export default function Index() {
     'Public Transport': '🚌',
   }
 
-  // Function to add transaction
-  const handleAddTransaction = () => {
-    if (!newName || !newAmount) return;
+  // always sort days descending after updates
+  const sortDaysDescending = (days) =>
+    [...days].sort((a, b) => b.id - a.id);
 
-    const newTransaction = {
-      id: selectedDate.getTime().toString(),
-      name: newName,
-      category: newCategory,
-      amount: -parseFloat(newAmount),
-      icon: categoryIcons[newCategory],
-      color: categoryColors[newCategory],
-    };
-
-    // build dayId from selectedDate
-    const dayTimestamp = new Date(selectedDate);
+  // ADD transaction
+  const handleAddTransaction = (newTransaction) => {
+    const dayTimestamp = new Date(newTransaction.date);
     dayTimestamp.setHours(0, 0, 0, 0);
     const dayId = dayTimestamp.getTime();
 
+    newTransaction.id = Date.now().toString();
+
     setExpenseData((prev) => {
-      const existingDayIndex = prev.findIndex(day => day.id === dayId);
+      const existingDayIndex = prev.findIndex((day) => day.id === dayId);
+      let updatedDays = [...prev];
 
       if (existingDayIndex >= 0) {
-        const updated = [...prev];
-        updated[existingDayIndex].transactions.unshift(newTransaction);
-        return updated;
+        updatedDays[existingDayIndex].transactions.unshift(newTransaction);
       } else {
-        return [
-          {
-            id: dayId,
-            transactions: [newTransaction],
-          },
-          ...prev,
-        ];
+        updatedDays.push({
+          id: dayId,
+          transactions: [newTransaction],
+        });
       }
+
+      return sortDaysDescending(updatedDays);
     });
 
-    // Reset + close modal
-    setNewName("");
-    setNewAmount("");
-    setNewCategory("Clothing");
     setModalVisible(false);
-    setShowDatePicker(false);
-    setSelectedDate(new Date());
+  };
+
+
+  // EDIT transaction
+  const handleEditTransaction = (updatedTransaction) => {
+    const dayTimestamp = new Date(updatedTransaction.date);
+    dayTimestamp.setHours(0, 0, 0, 0);
+    const newDayId = dayTimestamp.getTime();
+
+    setExpenseData((prev) => {
+      let updatedDays = [...prev];
+
+      // find old transaction
+      let oldDayIndex = -1;
+      let transactionIndex = -1;
+
+      updatedDays.forEach((day, dIndex) => {
+        const tIndex = day.transactions.findIndex(
+          (t) => t.id === updatedTransaction.id
+        );
+        if (tIndex !== -1) {
+          oldDayIndex = dIndex;
+          transactionIndex = tIndex;
+        }
+      });
+
+      if (oldDayIndex === -1 || transactionIndex === -1) {
+        return prev; // not found
+      }
+
+      // same day → just replace
+      if (updatedDays[oldDayIndex].id === newDayId) {
+        updatedDays[oldDayIndex].transactions[transactionIndex] =
+          updatedTransaction;
+        return sortDaysDescending(updatedDays);
+      }
+
+      // date changed → remove from old day
+      updatedDays[oldDayIndex].transactions.splice(transactionIndex, 1);
+      if (updatedDays[oldDayIndex].transactions.length === 0) {
+        updatedDays.splice(oldDayIndex, 1);
+      }
+
+      // add to new day
+      const newDayIndex = updatedDays.findIndex((d) => d.id === newDayId);
+      if (newDayIndex !== -1) {
+        updatedDays[newDayIndex].transactions.unshift(updatedTransaction);
+      } else {
+        updatedDays.push({
+          id: newDayId,
+          transactions: [updatedTransaction],
+        });
+      }
+
+      return sortDaysDescending(updatedDays);
+    });
+
+    setEditModalVisible(false);
   };
 
   const [expenseData, setExpenseData] = useState([{
@@ -299,272 +344,28 @@ export default function Index() {
       </View>
 
       <View style={{ alignItems: 'center' }}>
-        <Modal
+        {/* Add Transaction Modal */}
+        <TransactionModal
           visible={modalVisible}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setModalVisible(false)}
-        >
-          <ScrollView
-            style={styles.modalOverlay}
-            contentContainerStyle={styles.modalOverlayContent}
-          >
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Transaction</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Transaction Name"
-                value={newName}
-                onChangeText={setNewName}
-              />
-
-              {/* Category Picker */}
-              <Text style={styles.label}>Category</Text>
-              <View style={styles.pickerContainer}>
-                <FlatList
-                  data={Object.keys(categoryIcons)}
-                  horizontal
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.categoryChip,
-                        newCategory === item && {
-                          backgroundColor: categoryColors[item] + 45,
-                          borderColor: categoryColors[item] + 90
-                        },
-                      ]}
-                      onPress={() => setNewCategory(item)}
-                    >
-                      <Text
-                        style={[
-                          styles.categoryChipText,
-                          newCategory === item && styles.categoryChipTextSelected,
-                        ]}
-                      >
-                        {categoryIcons[item]} {item}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                  keyExtractor={(item) => item}
-                  showsHorizontalScrollIndicator={false}
-                />
-              </View>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Amount (€)"
-                value={newAmount}
-                onChangeText={setNewAmount}
-                keyboardType="numeric"
-              />
-
-              {/* Date Picker */}
-              <Text style={styles.label}>Date</Text>
-              {!showDatePicker && (
-                <TouchableOpacity
-                  style={styles.chooseDateButton}
-                  onPress={() => setShowDatePicker(true)}
-                >
-                  <Text style={styles.chooseDateButtonText}>
-                    Choose Date ({selectedDate.toLocaleDateString('en-GB')})
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              {/* DatePicker visible only when showDatePicker = true */}
-              {showDatePicker && (
-                <DatePicker
-                  mode="single"
-                  date={selectedDate}
-                  firstDayOfWeek={1}
-                  /*onChange={({ date }) => {
-                    // If date is Dayjs → convert to JS Date
-                    if (date && typeof date.toDate === 'function') {
-                      setSelectedDate(date.toDate());
-                    } else {
-                      setSelectedDate(date);
-                    }
-                  }}*/
-                  onChange={({ date }) => setSelectedDate(date)}
-
-                  styles={{
-                    selected: { backgroundColor: '#b3f0f0ff', borderColor: 'rgba(102, 235, 235, 1)', borderWidth: 1, borderRadius: 100 }, // Highlight the selected day
-                    selected_label: { color: 'white', fontWeight: 'bold' }, // Highlight the selected day label
-                  }}
-                />
-              )}
-
-              <View style={styles.modalButtonRow}>
-                <TouchableOpacity style={styles.modalCancelCompact} onPress={() => setModalVisible(false)} activeOpacity={0.7}>
-                  <Text style={styles.modalCancelCompactText}>Cancel</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity style={styles.modalAddCompact} onPress={handleAddTransaction} activeOpacity={0.7}>
-                  <Text style={styles.modalAddCompactText}>Add</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </Modal>
+          mode="add"
+          onCancel={() => setModalVisible(false)}
+          onSave={handleAddTransaction}
+          categoryIcons={categoryIcons}
+          categoryColors={categoryColors}
+        />
       </View>
 
       <View style={{ alignItems: 'center' }}>
-        <Modal
+        {/* Edit Transaction Modal */}
+        <TransactionModal
           visible={editModalVisible}
-          transparent={true}
-          animationType="slide"
-          onRequestClose={() => setEditModalVisible(false)}
-        >
-          <ScrollView
-            style={styles.modalOverlay}
-            contentContainerStyle={styles.modalOverlayContent}
-          >
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Edit Transaction</Text>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Transaction Name"
-                value={editingTransaction?.name || ''}
-                onChangeText={(text) =>
-                  setEditingTransaction((prev) => ({ ...prev, name: text }))
-                }
-              />
-
-              {/* Category Picker */}
-              <Text style={styles.label}>Category</Text>
-              <View style={styles.pickerContainer}>
-                <FlatList
-                  data={Object.keys(categoryIcons)}
-                  horizontal
-                  renderItem={({ item }) => (
-                    <TouchableOpacity
-                      style={[
-                        styles.categoryChip,
-                        editingTransaction?.category === item && {
-                          backgroundColor: categoryColors[item] + 45,
-                          borderColor: categoryColors[item] + 90,
-                        },
-                      ]}
-                      onPress={() =>
-                        setEditingTransaction((prev) => ({
-                          ...prev,
-                          category: item,
-                          icon: categoryIcons[item],
-                          color: categoryColors[item],
-                        }))
-                      }
-                    >
-                      <Text
-                        style={[
-                          styles.categoryChipText,
-                          editingTransaction?.category === item && styles.categoryChipTextSelected,
-                        ]}
-                      >
-                        {categoryIcons[item]} {item}
-                      </Text>
-                    </TouchableOpacity>
-                  )}
-                  keyExtractor={(item) => item}
-                  showsHorizontalScrollIndicator={false}
-                />
-              </View>
-
-              <TextInput
-                style={styles.input}
-                placeholder="Amount (€)"
-                value={editingTransaction ? Math.abs(editingTransaction.amount).toString() : ''}
-                onChangeText={(text) =>
-                  setEditingTransaction((prev) => ({
-                    ...prev,
-                    amount: -parseFloat(text || 0),
-                  }))
-                }
-                keyboardType="numeric"
-              />
-
-              {/* Show button if date picker is hidden */}
-              {!showEditDatePicker && (
-                <TouchableOpacity
-                  style={styles.chooseDateButton}
-                  onPress={() => setShowEditDatePicker(true)}
-                >
-                  <Text style={styles.chooseDateButtonText}>
-                    Choose Date ({editingTransaction ? new Date(editingDayId).toLocaleDateString('en-GB') : ''})
-                  </Text>
-                </TouchableOpacity>
-              )}
-
-              {/* Show DatePicker only when showEditDatePicker = true */}
-              {showEditDatePicker && (
-                <DatePicker
-                  mode="single"
-                  date={editingTransaction ? new Date(editingDayId) : new Date()}
-                  firstDayOfWeek={1}
-                  onChange={({ date }) => {
-                    if (!date) return;
-                    // Update the day ID where this transaction will be placed
-                    const newDayId = new Date(date);
-                    newDayId.setHours(0, 0, 0, 0);
-                    setEditingDayId(newDayId.getTime());
-                  }}
-                  styles={{
-                    selected: { backgroundColor: '#b3f0f0ff', borderColor: 'rgba(102, 235, 235, 1)', borderWidth: 1, borderRadius: 100 },
-                    selected_label: { color: 'white', fontWeight: 'bold' },
-                  }}
-                />
-              )}
-
-              <View style={styles.modalButtonRow}>
-                <TouchableOpacity
-                  style={styles.modalCancelCompact}
-                  onPress={() => setEditModalVisible(false)}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.modalCancelCompactText}>Cancel</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={styles.modalAddCompact}
-                  onPress={() => {
-                    // Save changes
-                    setExpenseData((prev) => {
-                      // Remove transaction from old day
-                      let updatedData = prev.map((day) => ({
-                        ...day,
-                        transactions: day.transactions.filter((t) => t.id !== editingTransaction.id),
-                      }));
-
-                      // Remove any day that became empty
-                      updatedData = updatedData.filter(day => day.transactions.length > 0);
-
-                      // Add transaction to the new day
-                      const existingDayIndex = updatedData.findIndex(day => day.id === editingDayId);
-                      if (existingDayIndex >= 0) {
-                        updatedData[existingDayIndex].transactions.unshift(editingTransaction);
-                      } else {
-                        updatedData.unshift({
-                          id: editingDayId,
-                          transactions: [editingTransaction],
-                        });
-                      }
-
-                      return updatedData;
-                    });
-
-                    setEditModalVisible(false);
-                    setShowEditDatePicker(false);
-                  }}
-                  activeOpacity={0.7}
-                >
-                  <Text style={styles.modalAddCompactText}>Save</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </ScrollView>
-        </Modal>
-
+          mode="edit"
+          transaction={editingTransaction}
+          onCancel={() => setEditModalVisible(false)}
+          onSave={handleEditTransaction}
+          categoryIcons={categoryIcons}
+          categoryColors={categoryColors}
+        />
       </View>
 
       {/* FAB Button */}
