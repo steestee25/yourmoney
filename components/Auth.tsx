@@ -1,95 +1,200 @@
-import { Button, Input } from '@rneui/base'
-import React, { useState } from 'react'
-import { Alert, AppState, StyleSheet, View } from 'react-native'
+import React, { useEffect, useRef, useState } from 'react'
+import {
+  ActivityIndicator,
+  Alert,
+  AppState,
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from 'react-native'
 import { supabase } from '../lib/supabase'
-
-// Tells Supabase Auth to continuously refresh the session automatically if
-// the app is in the foreground. When this is added, you will continue to receive
-// `onAuthStateChange` events with the `TOKEN_REFRESHED` or `SIGNED_OUT` event
-// if the user's session is terminated. This should only be registered once.
-AppState.addEventListener('change', (state) => {
-  if (state === 'active') {
-    supabase.auth.startAutoRefresh()
-  } else {
-    supabase.auth.stopAutoRefresh()
-  }
-})
 
 export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  
+  const passwordInputRef = useRef(null)
 
-  async function signInWithEmail() {
+  useEffect(() => {
+    const subscription = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        supabase.auth.startAutoRefresh()
+      } else {
+        supabase.auth.stopAutoRefresh()
+      }
+    })
+
+    return () => subscription.remove()
+  }, [])
+
+  const signInWithEmail = async () => {
+    if (!email || !password) {
+      Alert.alert('Please enter email and password')
+      return
+    }
+
     setLoading(true)
     const { error } = await supabase.auth.signInWithPassword({
-      email: email,
-      password: password,
+      email,
+      password,
     })
 
     if (error) Alert.alert(error.message)
     setLoading(false)
   }
 
-  async function signUpWithEmail() {
+  const signUpWithEmail = async () => {
+    if (!email || !password) {
+      Alert.alert('Please enter email and password')
+      return
+    }
+
     setLoading(true)
     const {
       data: { session },
       error,
     } = await supabase.auth.signUp({
-      email: email,
-      password: password,
+      email,
+      password,
     })
 
     if (error) Alert.alert(error.message)
-    if (!session) Alert.alert('Please check your inbox for email verification!')
+    else if (!session) Alert.alert('Please check your inbox for email verification!')
+
     setLoading(false)
   }
 
   return (
-    <View style={styles.container}>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Input
-          label="Email"
-          leftIcon={{ type: 'font-awesome', name: 'envelope' }}
-          onChangeText={(text) => setEmail(text)}
-          value={email}
-          placeholder="email@address.com"
-          autoCapitalize={'none'}
-        />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Input
-          label="Password"
-          leftIcon={{ type: 'font-awesome', name: 'lock' }}
-          onChangeText={(text) => setPassword(text)}
-          value={password}
-          secureTextEntry={true}
-          placeholder="Password"
-          autoCapitalize={'none'}
-        />
-      </View>
-      <View style={[styles.verticallySpaced, styles.mt20]}>
-        <Button title="Sign in" disabled={loading} onPress={() => signInWithEmail()} />
-      </View>
-      <View style={styles.verticallySpaced}>
-        <Button title="Sign up" disabled={loading} onPress={() => signUpWithEmail()} />
-      </View>
-    </View>
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
+    >
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        keyboardShouldPersistTaps="handled"
+      >
+        <View>
+          <Image
+            source={require('../assets/images/logo.png')}
+            style={styles.logo}
+            resizeMode="contain"
+          />
+        </View>
+
+        <View style={[styles.verticallySpaced, styles.mt20]}>
+          <TextInput
+            style={styles.input}
+            onChangeText={setEmail}
+            value={email}
+            placeholder="email@address.com"
+            autoCapitalize="none"
+            keyboardType="email-address"
+            returnKeyType="next"
+            onSubmitEditing={() => passwordInputRef.current?.focus()}
+          />
+        </View>
+
+        <View style={styles.verticallySpaced}>
+          <TextInput
+            ref={passwordInputRef}
+            style={styles.input}
+            onChangeText={setPassword}
+            value={password}
+            secureTextEntry
+            placeholder="Password"
+            autoCapitalize="none"
+            returnKeyType="done"
+            onSubmitEditing={signInWithEmail}
+          />
+        </View>
+
+        <View style={[styles.verticallySpaced, styles.mt20]}>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonSignIn]}
+            disabled={loading}
+            onPress={signInWithEmail}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign In</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+
+        <View style={styles.verticallySpaced}>
+          <TouchableOpacity
+            style={[styles.button, styles.buttonSignUp]}
+            disabled={loading}
+            onPress={signUpWithEmail}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>Sign Up</Text>
+            )}
+          </TouchableOpacity>
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   )
 }
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 40,
+    flex: 1,
+  },
+  scrollContent: {
+    flexGrow: 1,
+    paddingTop: 40,
     padding: 12,
   },
+  logo: {
+    width: 400,
+    height: 400,
+    alignSelf: 'center',
+    marginBottom: '3%',
+    marginTop: '8%',
+  },
   verticallySpaced: {
-    paddingTop: 4,
-    paddingBottom: 4,
+    paddingVertical: 4,
     alignSelf: 'stretch',
+    marginHorizontal: '5%',
   },
   mt20: {
-    marginTop: 20,
+    marginTop: 10,
+  },
+  input: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 10,
+    padding: 16,
+    marginBottom: 10,
+  },
+  button: {
+    height: 50,
+    justifyContent: 'center',
+    borderRadius: 20,
+    alignItems: 'center',
+  },
+  buttonSignIn: {
+    backgroundColor: '#00ecec8d',
+    marginBottom: 5,
+  },
+  buttonSignUp: {
+    backgroundColor: '#2ec7e5d7',
+  },
+  buttonText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 16,
   },
 })
