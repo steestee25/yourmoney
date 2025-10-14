@@ -6,6 +6,8 @@ import { BarChart } from "react-native-gifted-charts";
 import TransactionModal from "../../components/TransactionModal";
 import { styles } from "../../styles/index.styles";
 
+import { useAuth } from '../../contexts/AuthContext';
+
 export default function Index() {
 
   const [selectedValue, setSelectedValue] = useState(null);
@@ -16,6 +18,17 @@ export default function Index() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [editingDayId, setEditingDayId] = useState(null);
+
+  const { session } = useAuth()
+
+  // Stampa tutti i dati della sessione
+  console.log('Session completa:', session)
+
+  // Stampa dati specifici dell'utente
+  console.log('User ID:', session?.user?.id)
+  console.log('Email:', session?.user?.email)
+  console.log('User metadata:', session?.user?.user_metadata)
+  console.log('Access token:', session?.access_token)
 
   const data = [
     { value: 50, label: 'Feb', frontColor: '#8fe8e7ff' },
@@ -240,7 +253,7 @@ export default function Index() {
   const renderTransactionItem = ({ item: transaction, dayId }) => (
     <TouchableOpacity
       onPress={() => {
-        setEditingTransaction({ ...transaction, date: transaction.date || Number(dayId)});
+        setEditingTransaction({ ...transaction, date: transaction.date || Number(dayId) });
         setEditingDayId(dayId);
         setEditModalVisible(true);
       }}
