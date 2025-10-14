@@ -1,9 +1,14 @@
-import {Text, View, StyleSheet} from "react-native";
+import { Button, StyleSheet, View } from "react-native";
+import { supabase } from '../../lib/supabase';
 
 export default function AboutScreen() {
+  const handleLogout = async () => {
+    await supabase.auth.signOut()
+  }
+
   return (
     <View style={styles.container}>
-      <Text>YourMoney</Text>
+      <Button title="Logout" onPress={handleLogout} />
     </View>
   );
 }

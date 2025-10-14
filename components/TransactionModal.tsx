@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FlatList, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 
-import styles from "../../styles/components/transactionModal.styles";
+import styles from "../styles/components/transactionModal.styles";
 export default function TransactionModal({
     visible,
     mode = "add",

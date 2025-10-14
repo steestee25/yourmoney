@@ -3,8 +3,8 @@ import { useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
+import TransactionModal from "../../components/TransactionModal";
 import { styles } from "../../styles/index.styles";
-import TransactionModal from "../components/TransactionModal";
 
 export default function Index() {
 

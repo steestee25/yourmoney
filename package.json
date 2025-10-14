@@ -13,9 +13,13 @@
   "dependencies": {
     "@expo/vector-icons": "^15.0.2",
     "@google/genai": "^1.20.0",
+    "@react-native-async-storage/async-storage": "^2.2.0",
     "@react-navigation/bottom-tabs": "^7.3.10",
     "@react-navigation/elements": "^2.3.8",
     "@react-navigation/native": "^7.1.6",
+    "@rneui/base": "^4.0.0-rc.8",
+    "@supabase/supabase-js": "^2.75.0",
+    "aes-js": "^3.1.2",
     "expo": "~53.0.20",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
@@ -34,6 +38,7 @@
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
     "react-native-gesture-handler": "~2.24.0",
+    "react-native-get-random-values": "^1.11.0",
     "react-native-gifted-charts": "^1.4.63",
     "react-native-reanimated": "~3.17.4",
     "react-native-safe-area-context": "5.4.0",
@@ -41,10 +46,12 @@
     "react-native-svg": "15.11.2",
     "react-native-ui-datepicker": "^3.1.2",
     "react-native-web": "~0.20.0",
-    "react-native-webview": "13.13.5"
+    "react-native-webview": "13.13.5",
+    "expo-secure-store": "~14.2.4"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",
+    "@types/aes-js": "^3.1.4",
     "@types/react": "~19.0.10",
     "eslint": "^9.25.0",
     "eslint-config-expo": "~9.2.0",
