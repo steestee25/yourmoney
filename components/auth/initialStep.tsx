@@ -9,6 +9,8 @@ import {
   View,
 } from 'react-native'
 
+import { COLORS } from '@/constants/color'
+
 interface Props {
   onNext: () => void
   loading: boolean
@@ -25,15 +27,15 @@ export default function InitialStep({ onNext, loading }: Props) {
 
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <TouchableOpacity
-          style={[styles.button, styles.buttonSignIn]}
+          style={styles.button}
           onPress={onNext}
           disabled={loading}
         >
           {loading ? (
-            <ActivityIndicator color="#fff" />
+            <ActivityIndicator color={COLORS.white} />
           ) : (
             <View style={styles.buttonContentRow}>
-              <Octicons name="mail" size={24} color="#fff" style={styles.buttonIcon} />
+              <Octicons name="mail" size={24} color={COLORS.white} style={styles.buttonIcon} />
               <Text style={styles.buttonText}>Login with Email</Text>
             </View>
           )}
@@ -59,16 +61,13 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   button: {
-    height: 50,
-    justifyContent: 'center',
-    borderRadius: 15,
+    backgroundColor: COLORS.primaryLight,
+    padding: 15,
     alignItems: 'center',
-  },
-  buttonSignIn: {
-    backgroundColor: '#00ecec8d',
+    borderRadius: 12,
     marginTop: '10%',
   },
   buttonIcon: { marginRight: 8 },
   buttonContentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  buttonText: { color: '#fff', fontWeight: 'bold', fontSize: 16 },
+  buttonText: { color: COLORS.white, fontWeight: 'bold', fontSize: 16 },
 })

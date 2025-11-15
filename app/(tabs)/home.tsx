@@ -4,9 +4,11 @@ import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
 import TransactionModal from "../../components/TransactionModal";
-import { styles } from "../../styles/index.styles";
+import { styles } from "../../styles/home.styles";
 
 import { useAuth } from '../../contexts/AuthContext';
+
+import { COLORS } from '../../constants/color';
 
 export default function Index() {
 
@@ -327,7 +329,7 @@ export default function Index() {
               </Text>)}
           </View>
           <BarChart data={data} barBorderRadius={4} yAxisThickness={0} xAxisThickness={0} hideRules={true}
-            hideYAxisText={true} noOfSections={1} height={150} xAxisLabelTextStyle={{ color: '#ffffff', fontWeight: 'bold' }} initialSpacing={10} onPress={handleBarPress} />
+            hideYAxisText={true} noOfSections={1} height={150} xAxisLabelTextStyle={{ color: COLORS.white, fontWeight: 'bold' }} initialSpacing={10} onPress={handleBarPress} />
         </View>
       </View>
 
@@ -369,7 +371,7 @@ export default function Index() {
       <View style={styles.fabContainer} pointerEvents="box-none">
         {/* FAB Assistente AI */}
         <View style={[styles.fabButtonSmall, { marginBottom: 15 }]}>
-          <Ionicons name="chatbubble-ellipses-outline" size={32} color="#fff" />
+          <Ionicons name="chatbubble-ellipses-outline" size={32} color={COLORS.white} />
         </View>
         {/* FAB Add */}
         <TouchableOpacity
@@ -377,7 +379,7 @@ export default function Index() {
           onPress={() => setModalVisible(true)}
         >
           <Text>
-            <Ionicons name="add" size={32} color="#fff" />
+            <Ionicons name="add" size={32} color={COLORS.white} />
           </Text>
         </TouchableOpacity>
       </View>

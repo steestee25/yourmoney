@@ -1,10 +1,10 @@
 import { StyleSheet } from "react-native";
-
+import { COLORS } from "../constants/color";
 
 export const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
   },
   containerHeader: {
     marginTop: '10%',
@@ -24,7 +24,7 @@ export const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1.5,
-    borderColor: '#f0f0f0eb',
+    borderColor: COLORS.borderWhite,
   },
   recapContainer: {
     flex: 0.4,
@@ -140,13 +140,13 @@ export const styles = StyleSheet.create({
     marginRight: 6,
   },
   fabButton: {
-    backgroundColor: '#00ECEC',
+    backgroundColor: COLORS.primary,
     width: 64,
     height: 64,
     borderRadius: 20,
     alignItems: 'center',
     justifyContent: 'center',
-    shadowColor: '#000',
+    shadowColor: COLORS.black,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -163,7 +163,7 @@ export const styles = StyleSheet.create({
   },
   modalContent: {
     width: "90%",
-    backgroundColor: "#fff",
+    backgroundColor: COLORS.white,
     borderRadius: 20,
     padding: 20,
   },
@@ -197,17 +197,17 @@ export const styles = StyleSheet.create({
     color: "#333",
   },
   categoryChipTextSelected: {
-    color: "#fff",
+    color: COLORS.white,
     fontWeight: "bold",
   },
   addButton: {
-    backgroundColor: "#00ECEC",
+    backgroundColor: COLORS.primary,
     paddingVertical: 12,
     borderRadius: 10,
     alignItems: "center",
   },
   addButtonText: {
-    color: "#fff",
+    color: COLORS.white,
     fontWeight: "bold",
     fontSize: 16,
   },
@@ -223,19 +223,19 @@ export const styles = StyleSheet.create({
   },
   modalAddCompact: {
     flex: 1,
-    backgroundColor: '#00ECEC',
+    backgroundColor: COLORS.primary,
     paddingVertical: 10,
     borderRadius: 20,
     alignItems: 'center',
     marginLeft: 8,
-    shadowColor: '#00ECEC',
+    shadowColor: COLORS.primary,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3,
     elevation: 3,
   },
   modalAddCompactText: {
-    color: '#fff',
+    color: COLORS.white,
     fontWeight: '600',
     fontSize: 14,
   },
@@ -265,7 +265,7 @@ export const styles = StyleSheet.create({
     marginBottom: 15,
   },
   chooseDateButtonText: {
-    color: '#fff',
+    color: COLORS.white,
     fontWeight: 'bold',
     fontSize: 14,
   },

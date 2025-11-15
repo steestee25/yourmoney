@@ -1,5 +1,6 @@
 // components/TransactionModal.styles.js
 import { StyleSheet } from "react-native";
+import { COLORS } from "../../constants/color";
 
 export default StyleSheet.create({
     modalBackground: {
@@ -8,7 +9,7 @@ export default StyleSheet.create({
     },
     modalContainer: {
         width: "90%",
-        backgroundColor: "#fff",
+        backgroundColor: COLORS.white,
         borderRadius: 20,
         padding: 20,
     },
@@ -40,7 +41,7 @@ export default StyleSheet.create({
         backgroundColor: "#f5f5f5",
     },
     categoryItemSelected: {
-        color: "#fff",
+        color: COLORS.white,
         fontWeight: "bold",
     },
     amountRow: {
@@ -76,7 +77,7 @@ export default StyleSheet.create({
         alignItems: "center",
     },
     dateButtonText: {
-        color: "#fff",
+        color: COLORS.white,
         fontWeight: "bold",
         fontSize: 14,
     },
@@ -100,13 +101,13 @@ export default StyleSheet.create({
     },
     saveButton: {
         flex: 1,
-        backgroundColor: "#00ECEC",
+        backgroundColor: COLORS.primary,
         paddingVertical: 10,
         borderRadius: 20,
         alignItems: "center",
     },
     saveButtonText: {
-        color: "#fff",
+        color: COLORS.white,
         fontWeight: "600",
         fontSize: 14,
     },

@@ -1,7 +1,10 @@
+import { COLORS } from '@/constants/color'
 import { MaterialIcons } from '@expo/vector-icons'
-import React, { useRef } from 'react'
+import React, { useRef, useState } from 'react'
 import {
   ActivityIndicator,
+  Animated,
+  Easing,
   StyleSheet,
   Text,
   TextInput,
@@ -29,63 +32,205 @@ export default function PasswordStep({
   loading,
 }: Props) {
   const inputRef = useRef<TextInput>(null)
+  const [showPassword, setShowPassword] = useState(false)
+
+  // Animazione per blocco (titolo + input + bottoni)
+  const contentAnim = useRef(new Animated.Value(0)).current
+
+  const handleFocus = () => {
+    Animated.timing(contentAnim, {
+      toValue: 1,
+      duration: 300,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: false,
+    }).start()
+  }
+
+  const handleBlur = () => {
+    if (!password) {
+      Animated.timing(contentAnim, {
+        toValue: 0,
+        duration: 300,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: false,
+      }).start()
+    }
+  }
+
+  const contentTranslateY = contentAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [110, -50], // move UP
+  })
+
+  const titleTranslateX = contentAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [0, -70], // move LEFT
+  })
+
+  const titleFontSize = contentAnim.interpolate({
+    inputRange: [0, 1],
+    outputRange: [28, 24], // font SMALLER
+  })
 
   return (
     <View style={styles.container}>
-      <TouchableOpacity onPress={onBack} style={styles.back}>
+      {/* Freccia BACK statica */}
+      <TouchableOpacity onPress={onBack} style={styles.backIcon}>
         <MaterialIcons name="arrow-back" size={28} color="#00C6D3" />
       </TouchableOpacity>
 
-      <Text style={styles.title}>Inserisci la password</Text>
-      <Text style={styles.subtitle}>{email}</Text>
+      {/* Blocco animato: titolo + input + bottoni */}
+      <Animated.View
+        style={[
+          styles.animatedBlock,
+          { transform: [{ translateY: contentTranslateY }] },
+        ]}
+      >
+        <Animated.Text
+          style={[
+            styles.title,
+            {
+              fontSize: titleFontSize,
+              transform: [{ translateX: titleTranslateX }],
+            },
+          ]}
+        >
+          Insert your password
+        </Animated.Text>
 
-      <TextInput
-        ref={inputRef}
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-        placeholder="Password"
-        autoCapitalize="none"
-        returnKeyType="done"
-        onSubmitEditing={onSignIn}
-        autoFocus
-      />
+        <View style={styles.passwordContainer}>
+          <TextInput
+            ref={inputRef}
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry={!showPassword}
+            placeholder="Password"
+            autoCapitalize="none"
+            returnKeyType="done"
+            onSubmitEditing={onSignIn}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            autoFocus
+          />
+          <TouchableOpacity
+            style={styles.iconButton}
+            onPress={() => setShowPassword(!showPassword)}
+          >
+            <MaterialIcons
+              name={showPassword ? 'visibility' : 'visibility-off'}
+              size={24}
+              color="#9292928a"
+            />
+          </TouchableOpacity>
+        </View>
 
-      <View style={styles.row}>
-        <TouchableOpacity style={[styles.button, styles.signup]} onPress={onSignUp} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Registrati</Text>}
+        <TouchableOpacity
+          style={[styles.button, styles.signin]}
+          onPress={onSignIn}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color={COLORS.white} />
+          ) : (
+            <Text style={styles.buttonText}>Sign in</Text>
+          )}
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, styles.signin]} onPress={onSignIn} disabled={loading}>
-          {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Accedi</Text>}
-        </TouchableOpacity>
-      </View>
+        <View style={styles.signupPrompt}>
+          <Text style={styles.signupText}>Don't have an account? </Text>
+          <TouchableOpacity onPress={onSignUp} disabled={loading}>
+            <Text style={styles.signupLink}>Sign up</Text>
+          </TouchableOpacity>
+        </View>
+      </Animated.View>
     </View>
   )
 }
 
 const styles = StyleSheet.create({
   container: { width: '100%' },
-  back: { marginBottom: 20 },
-  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 5 },
-  subtitle: { fontSize: 14, color: '#666', marginBottom: 20 },
+
+  backIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: COLORS.borderWhite,
+    marginBottom: 10,
+    alignSelf: 'flex-start',
+  },
+
+  // Blocco (titolo + input + bottoni) che parte più in basso
+  animatedBlock: {
+    width: '100%',
+    alignItems: 'center',
+    paddingTop: 60, // parte più giù rispetto alla freccia
+  },
+
+  title: {
+    fontWeight: 'bold',
+    marginBottom: 20,
+    textAlign: 'center',
+    width: '100%',
+  },
+
+  passwordContainer: {
+    position: 'relative',
+    marginBottom: 20,
+    width: '100%',
+  },
+
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 12,
     padding: 16,
-    marginBottom: 20,
+    paddingRight: 50,
+    width: '100%',
   },
-  row: { flexDirection: 'row', justifyContent: 'space-between' },
+
+  iconButton: {
+    position: 'absolute',
+    right: 12,
+    top: '50%',
+    marginTop: -12,
+  },
+
   button: {
-    flex: 1,
     padding: 15,
     borderRadius: 12,
     alignItems: 'center',
-    marginHorizontal: 5,
+    width: '100%',
   },
-  signup: { backgroundColor: '#2ec7e5d7' },
-  signin: { backgroundColor: '#00ecec8d' },
-  buttonText: { color: '#fff', fontSize: 18, fontWeight: 'bold' },
+
+  signup: {
+    backgroundColor: '#2ec7e5d7',
+  },
+
+  signin: {
+    backgroundColor: COLORS.primaryLight,
+  },
+
+  buttonText: { color: COLORS.white, fontSize: 18, fontWeight: 'bold' },
+
+  signupPrompt: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+
+  signupText: {
+    fontSize: 14,
+    color: '#5d5d5dff',
+  },
+
+  signupLink: {
+    fontSize: 15,
+    color: '#00C6D3',
+    fontWeight: '600',
+  },
 })
