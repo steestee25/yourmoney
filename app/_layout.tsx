@@ -1,9 +1,9 @@
 // app/_layout.tsx
 import { Stack } from 'expo-router'
 import { ActivityIndicator, AppState, StyleSheet, View } from 'react-native'
-import Auth from '../components/Auth'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
+import Auth from './auth'
 
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
