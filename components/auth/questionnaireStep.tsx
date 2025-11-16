@@ -1,7 +1,7 @@
 import { COLORS } from '@/constants/color'
 import { onboardingQuestions, Question } from '@/constants/questionnaire'
 import { MaterialIcons } from '@expo/vector-icons'
-import React, { useEffect, useRef, useState } from 'react'
+import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import {
     Animated,
     Easing,
@@ -16,7 +16,14 @@ interface Props {
   onComplete: (answers: Record<string, string | string[] | null>) => void
 }
 
-export default function QuestionnaireStep({ onBack, onComplete }: Props) {
+export type QuestionnaireStepHandle = {
+  goBack: () => void
+}
+
+const QuestionnaireStep = forwardRef<QuestionnaireStepHandle, Props>(function QuestionnaireStep(
+  { onBack, onComplete },
+  ref
+) {
   const [questions, setQuestions] = useState<Question[]>(onboardingQuestions)
   const [index, setIndex] = useState(0)
 
@@ -80,6 +87,10 @@ export default function QuestionnaireStep({ onBack, onComplete }: Props) {
     if (index === 0) return onBack()
     setIndex(index - 1)
   }
+
+  useImperativeHandle(ref, () => ({
+    goBack: handleBack,
+  }))
 
   const progress = (index + 1) / total
 
@@ -163,7 +174,9 @@ export default function QuestionnaireStep({ onBack, onComplete }: Props) {
       </TouchableOpacity>
     </View>
   )
-}
+})
+
+export default QuestionnaireStep
 
 /* ---------------------- STYLES ---------------------- */
 

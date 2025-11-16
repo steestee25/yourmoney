@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import {
   AppState,
   BackHandler,
@@ -11,7 +11,7 @@ import EmailStep from '../components/auth/emailStep'
 import InitialStep from '../components/auth/initialStep'
 import NameStep from '../components/auth/nameStep'
 import PasswordStep from '../components/auth/passwordStep'
-import QuestionnaireStep from '../components/auth/questionnaireStep'
+import QuestionnaireStep, { QuestionnaireStepHandle } from '../components/auth/questionnaireStep'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
@@ -25,6 +25,7 @@ export default function AuthScreen() {
   const [questionnaire, setQuestionnaire] = useState<any>({})
   const [loading, setLoading] = useState(false)
   const { beginOnboarding, finishOnboarding } = useAuth()
+  const questionnaireRef = useRef<QuestionnaireStepHandle>(null)
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
@@ -49,6 +50,10 @@ export default function AuthScreen() {
       }
       if (step === 'name') {
         // Once on the name step we don't allow going back to password/email
+        return true
+      }
+      if (step === 'questionnaire') {
+        questionnaireRef.current?.goBack()
         return true
       }
       return false
@@ -132,6 +137,7 @@ export default function AuthScreen() {
 
         {step === 'questionnaire' && (
           <QuestionnaireStep
+            ref={questionnaireRef}
             onBack={() => setStep('name')}
             onComplete={(answers) => {
               setQuestionnaire(answers)
