@@ -9,15 +9,17 @@ import {
 } from 'react-native'
 import EmailStep from '../components/auth/emailStep'
 import InitialStep from '../components/auth/initialStep'
+import NameStep from '../components/auth/nameStep'
 import PasswordStep from '../components/auth/passwordStep'
 import { supabase } from '../lib/supabase'
 
-type AuthStep = 'initial' | 'email' | 'password'
+type AuthStep = 'initial' | 'email' | 'password' | 'name'
 
 export default function AuthScreen() {
   const [step, setStep] = useState<AuthStep>('initial')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
 
   useEffect(() => {
@@ -37,6 +39,10 @@ export default function AuthScreen() {
       }
       if (step === 'password') {
         setStep('email')
+        return true
+      }
+      if (step === 'name') {
+        setStep('password')
         return true
       }
       return false
@@ -95,6 +101,18 @@ export default function AuthScreen() {
             onBack={() => setStep('email')}
             onSignIn={() => handleAuth('signIn')}
             onSignUp={() => handleAuth('signUp')}
+          />
+        )}
+
+        {step === 'name' && (
+          <NameStep
+            name={name}
+            setName={setName}
+            onBack={() => setStep('password')}
+            onNext={() => {
+              // per ora non andiamo avanti, il prossimo step sarà il questionario
+              // nei passi successivi gli faremo fare qualcosa (es. setStep('questionnaire'))
+            }}
           />
         )}
       </ScrollView>
