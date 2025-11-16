@@ -11,6 +11,7 @@ import EmailStep from '../components/auth/emailStep'
 import InitialStep from '../components/auth/initialStep'
 import NameStep from '../components/auth/nameStep'
 import PasswordStep from '../components/auth/passwordStep'
+import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
 type AuthStep = 'initial' | 'email' | 'password' | 'name'
@@ -21,12 +22,15 @@ export default function AuthScreen() {
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
   const [loading, setLoading] = useState(false)
+  const { beginOnboarding, finishOnboarding } = useAuth()
 
   useEffect(() => {
     const subscription = AppState.addEventListener('change', (state) => {
-      state === 'active'
-        ? supabase.auth.startAutoRefresh()
-        : supabase.auth.stopAutoRefresh()
+      if (state === 'active') {
+        supabase.auth.startAutoRefresh()
+      } else {
+        supabase.auth.stopAutoRefresh()
+      }
     })
     return () => subscription.remove()
   }, [])
@@ -63,13 +67,29 @@ export default function AuthScreen() {
         ? supabase.auth.signInWithPassword({ email, password })
         : supabase.auth.signUp({ email, password })
 
-    const { data, error } = await action
+    const { error } = await action
 
-    if (error) alert(error.message)
-    else if (mode === 'signUp' && !data.session)
-      alert('Please check your inbox for verification')
+    if (error) {
+      alert(error.message)
+      setLoading(false)
+      return
+    }
 
+    if (mode === 'signIn') {
+      setLoading(false)
+      finishOnboarding()
+      return
+    }
+
+    // Sign up succeeded, move forward in the onboarding flow
     setLoading(false)
+    beginOnboarding()
+    setStep('name')
+  }
+
+  const handleNameNext = () => {
+    finishOnboarding()
+    // Next onboarding steps (e.g. questionnaire) can be triggered here later on
   }
 
   return (
@@ -109,10 +129,7 @@ export default function AuthScreen() {
             name={name}
             setName={setName}
             onBack={() => setStep('password')}
-            onNext={() => {
-              // per ora non andiamo avanti, il prossimo step sarà il questionario
-              // nei passi successivi gli faremo fare qualcosa (es. setStep('questionnaire'))
-            }}
+            onNext={handleNameNext}
           />
         )}
       </ScrollView>

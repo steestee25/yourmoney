@@ -1,4 +1,3 @@
-// components/auth/nameStep.tsx
 import { COLORS } from '@/constants/color'
 import { MaterialIcons } from '@expo/vector-icons'
 import React, { useRef, useState } from 'react'

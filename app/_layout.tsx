@@ -14,7 +14,7 @@ AppState.addEventListener('change', (state) => {
 })
 
 function RootLayoutContent() {
-  const { session, loading } = useAuth()
+  const { session, loading, isOnboarding } = useAuth()
 
   if (loading) {
     return (
@@ -24,7 +24,7 @@ function RootLayoutContent() {
     )
   }
 
-  if (!session) {
+  if (!session || isOnboarding) {
     return <Auth />
   }
 
