@@ -11,16 +11,18 @@ import EmailStep from '../components/auth/emailStep'
 import InitialStep from '../components/auth/initialStep'
 import NameStep from '../components/auth/nameStep'
 import PasswordStep from '../components/auth/passwordStep'
+import QuestionnaireStep from '../components/auth/questionnaireStep'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
-type AuthStep = 'initial' | 'email' | 'password' | 'name'
+type AuthStep = 'initial' | 'email' | 'password' | 'name' | 'questionnaire'
 
 export default function AuthScreen() {
   const [step, setStep] = useState<AuthStep>('initial')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
+  const [questionnaire, setQuestionnaire] = useState<any>({})
   const [loading, setLoading] = useState(false)
   const { beginOnboarding, finishOnboarding } = useAuth()
 
@@ -46,7 +48,7 @@ export default function AuthScreen() {
         return true
       }
       if (step === 'name') {
-        setStep('password')
+        // Once on the name step we don't allow going back to password/email
         return true
       }
       return false
@@ -88,7 +90,7 @@ export default function AuthScreen() {
   }
 
   const handleNameNext = () => {
-    finishOnboarding()
+    setStep('questionnaire')
     // Next onboarding steps (e.g. questionnaire) can be triggered here later on
   }
 
@@ -98,7 +100,7 @@ export default function AuthScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
       keyboardVerticalOffset={Platform.OS === 'ios' ? 0 : 20}
     >
-      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={styles.scrollContent} keyboardShouldPersistTaps="always">
         {step === 'initial' && (
           <InitialStep onNext={() => setStep('email')} loading={loading} />
         )}
@@ -125,13 +127,20 @@ export default function AuthScreen() {
         )}
 
         {step === 'name' && (
-          <NameStep
-            name={name}
-            setName={setName}
-            onBack={() => setStep('password')}
-            onNext={handleNameNext}
+          <NameStep name={name} setName={setName} onNext={handleNameNext} />
+        )}
+
+        {step === 'questionnaire' && (
+          <QuestionnaireStep
+            onBack={() => setStep('name')}
+            onComplete={(answers) => {
+              setQuestionnaire(answers)
+              // next: save to DB then finish onboarding
+              finishOnboarding()
+            }}
           />
         )}
+
       </ScrollView>
     </KeyboardAvoidingView>
   )

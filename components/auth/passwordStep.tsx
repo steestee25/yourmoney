@@ -81,6 +81,7 @@ export default function PasswordStep({
 
       {/* Blocco animato: titolo + input + bottoni */}
       <Animated.View
+        pointerEvents="box-none"
         style={[
           styles.animatedBlock,
           { transform: [{ translateY: contentTranslateY }] },

@@ -1,5 +1,4 @@
 import { COLORS } from '@/constants/color'
-import { MaterialIcons } from '@expo/vector-icons'
 import React, { useRef, useState } from 'react'
 import {
     Animated,
@@ -15,10 +14,9 @@ interface Props {
     name: string
     setName: (v: string) => void
     onNext: () => void
-    onBack: () => void
 }
 
-export default function NameStep({ name, setName, onNext, onBack }: Props) {
+export default function NameStep({ name, setName, onNext }: Props) {
     const [error, setError] = useState('')
     const [isFocused, setIsFocused] = useState(false)
 
@@ -74,11 +72,6 @@ export default function NameStep({ name, setName, onNext, onBack }: Props) {
 
     return (
         <View style={styles.container}>
-            {/* FIXED Back Arrow */}
-            <TouchableOpacity onPress={onBack} style={styles.backIcon}>
-                <MaterialIcons name="arrow-back" size={28} color="#00C6D3" />
-            </TouchableOpacity>
-
             {/* ANIMATED CONTENT (starts lower + stays under back arrow) */}
             <Animated.View
                 style={[

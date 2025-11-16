@@ -1,0 +1,253 @@
+import { COLORS } from '@/constants/color'
+import { onboardingQuestions, Question } from '@/constants/questionnaire'
+import { MaterialIcons } from '@expo/vector-icons'
+import React, { useEffect, useRef, useState } from 'react'
+import {
+    Animated,
+    Easing,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
+} from 'react-native'
+
+interface Props {
+  onBack: () => void
+  onComplete: (answers: Record<string, string | string[] | null>) => void
+}
+
+export default function QuestionnaireStep({ onBack, onComplete }: Props) {
+  const [questions, setQuestions] = useState<Question[]>(onboardingQuestions)
+  const [index, setIndex] = useState(0)
+
+  const contentAnim = useRef(new Animated.Value(0)).current
+
+  const current = questions[index]
+  const total = questions.length
+
+  // Animation slide-in
+  const slideIn = () => {
+    contentAnim.setValue(40)
+    Animated.timing(contentAnim, {
+      toValue: 0,
+      duration: 250,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: true,
+    }).start()
+  }
+
+  useEffect(() => {
+    slideIn()
+  }, [index])
+
+  // --- Handle selection (single or multiple) ---
+  const handleSelect = (value: string) => {
+    const updated = [...questions]
+    const q = updated[index]
+
+    if (q.multiple) {
+      const currentArray = Array.isArray(q.answer) ? q.answer : []
+
+      if (currentArray.includes(value)) {
+        q.answer = currentArray.filter((v) => v !== value)
+      } else {
+        q.answer = [...currentArray, value]
+      }
+    } else {
+      q.answer = value
+    }
+
+    setQuestions(updated)
+  }
+
+  const handleNext = () => {
+    const answered = current.multiple
+      ? Array.isArray(current.answer) && current.answer.length > 0
+      : !!current.answer
+
+    if (!answered) return
+
+    if (index < total - 1) {
+      setIndex(index + 1)
+    } else {
+      const payload: Record<string, string | string[] | null> = {}
+      questions.forEach((q) => (payload[q.key] = q.answer))
+      onComplete(payload)
+    }
+  }
+
+  const handleBack = () => {
+    if (index === 0) return onBack()
+    setIndex(index - 1)
+  }
+
+  const progress = (index + 1) / total
+
+  const Option = ({
+    label,
+    selected,
+    onPress,
+  }: {
+    label: string
+    selected: boolean
+    onPress: () => void
+  }) => (
+    <TouchableOpacity
+      style={[styles.option, selected && styles.optionSelected]}
+      onPress={onPress}
+    >
+      <Text style={[styles.optionText, selected && styles.optionTextSelected]}>
+        {label}
+      </Text>
+    </TouchableOpacity>
+  )
+
+  const isAnswered = current.multiple
+    ? Array.isArray(current.answer) && current.answer.length > 0
+    : !!current.answer
+
+  return (
+    <View style={styles.container}>
+      {/* Back arrow */}
+      <TouchableOpacity onPress={handleBack} style={styles.backIcon}>
+        <MaterialIcons name="arrow-back" size={28} color="#00C6D3" />
+      </TouchableOpacity>
+
+      {/* Progress bar */}
+      <View style={styles.progressBackground}>
+        <View
+          style={[styles.progressFill, { width: `${progress * 100}%` }]}
+        />
+      </View>
+
+      {/* Question counter */}
+      <Text style={styles.counterText}>
+        Question {index + 1} of {total}
+      </Text>
+
+      {/* Animated card */}
+      <Animated.View
+        style={[
+          styles.card,
+          { transform: [{ translateY: contentAnim }] },
+        ]}
+      >
+        <Text style={styles.questionTitle}>{current.title}</Text>
+
+        {current.options.map((opt) => (
+          <Option
+            key={opt.value}
+            label={opt.label}
+            selected={
+              current.multiple
+                ? Array.isArray(current.answer) && current.answer.includes(opt.value)
+                : current.answer === opt.value
+            }
+            onPress={() => handleSelect(opt.value)}
+          />
+        ))}
+      </Animated.View>
+
+      {/* Next / Finish */}
+      <TouchableOpacity
+        style={[
+          styles.nextButton,
+          !isAnswered && { opacity: 0.4 },
+        ]}
+        disabled={!isAnswered}
+        onPress={handleNext}
+      >
+        <Text style={styles.nextText}>
+          {index === total - 1 ? 'Finish' : 'Next'}
+        </Text>
+      </TouchableOpacity>
+    </View>
+  )
+}
+
+/* ---------------------- STYLES ---------------------- */
+
+const styles = StyleSheet.create({
+  container: {
+    width: '100%',
+    flex: 1,
+  },
+
+  backIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 25,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1.5,
+    borderColor: COLORS.borderWhite,
+    marginBottom: 20,
+  },
+
+  progressBackground: {
+    height: 10,
+    width: '100%',
+    backgroundColor: '#eee',
+    borderRadius: 8,
+    marginBottom: 12,
+  },
+
+  progressFill: {
+    height: 10,
+    backgroundColor: COLORS.primaryLight,
+    borderRadius: 8,
+  },
+
+  counterText: {
+    fontSize: 14,
+    color: '#666',
+    marginBottom: 20,
+  },
+
+  card: {
+    width: '100%',
+    paddingVertical: 10,
+  },
+
+  questionTitle: {
+    fontSize: 22,
+    fontWeight: 'bold',
+    marginBottom: 20,
+  },
+
+  option: {
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 12,
+    marginBottom: 10,
+  },
+
+  optionSelected: {
+    backgroundColor: COLORS.primaryLight,
+    borderColor: COLORS.primary,
+  },
+
+  optionText: {
+    fontSize: 16,
+  },
+
+  optionTextSelected: {
+    color: COLORS.white,
+    fontWeight: '600',
+  },
+
+  nextButton: {
+    backgroundColor: COLORS.primary,
+    padding: 16,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+
+  nextText: {
+    color: COLORS.white,
+    fontSize: 18,
+    fontWeight: 'bold',
+  },
+})
