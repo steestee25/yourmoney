@@ -3,12 +3,12 @@ import { onboardingQuestions, Question } from '@/constants/questionnaire'
 import { MaterialIcons } from '@expo/vector-icons'
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import {
-    Animated,
-    Easing,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  Animated,
+  Easing,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native'
 
 interface Props {
@@ -178,8 +178,6 @@ const QuestionnaireStep = forwardRef<QuestionnaireStepHandle, Props>(function Qu
 
 export default QuestionnaireStep
 
-/* ---------------------- STYLES ---------------------- */
-
 const styles = StyleSheet.create({
   container: {
     width: '100%',
@@ -237,8 +235,8 @@ const styles = StyleSheet.create({
   },
 
   optionSelected: {
-    backgroundColor: COLORS.primaryLight,
     borderColor: COLORS.primary,
+    borderWidth: 1.5,
   },
 
   optionText: {
@@ -246,7 +244,6 @@ const styles = StyleSheet.create({
   },
 
   optionTextSelected: {
-    color: COLORS.white,
     fontWeight: '600',
   },
 
