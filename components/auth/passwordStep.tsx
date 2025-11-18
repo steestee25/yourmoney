@@ -187,7 +187,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 12,
+    borderRadius: 15,
     padding: 16,
     paddingRight: 50,
     width: '100%',
@@ -202,7 +202,7 @@ const styles = StyleSheet.create({
 
   button: {
     padding: 15,
-    borderRadius: 12,
+    borderRadius: 15,
     alignItems: 'center',
     width: '100%',
   },

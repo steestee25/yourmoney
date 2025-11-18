@@ -171,7 +171,7 @@ const styles = StyleSheet.create({
   input: {
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 12,
+    borderRadius: 15,
     padding: 16,
     width: '100%',
   },
@@ -188,7 +188,7 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.primaryLight,
     padding: 15,
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 15,
     width: '100%',
   },
 

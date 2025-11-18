@@ -230,7 +230,7 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 12,
+    borderRadius: 15,
     marginBottom: 10,
   },
 
@@ -250,7 +250,7 @@ const styles = StyleSheet.create({
   nextButton: {
     backgroundColor: COLORS.primary,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 15,
     alignItems: 'center',
     marginTop: 20,
   },

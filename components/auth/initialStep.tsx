@@ -35,7 +35,7 @@ export default function InitialStep({ onNext, loading }: Props) {
             <ActivityIndicator color={COLORS.white} />
           ) : (
             <View style={styles.buttonContentRow}>
-              <Octicons name="mail" size={24} color={COLORS.white} style={styles.buttonIcon} />
+              <Octicons name="mail" size={24} color={COLORS.primary} style={styles.buttonIcon} />
               <Text style={styles.buttonText}>Login with Email</Text>
             </View>
           )}
@@ -61,13 +61,25 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   button: {
-    backgroundColor: COLORS.primaryLight,
+    backgroundColor: COLORS.white,
     padding: 15,
     alignItems: 'center',
-    borderRadius: 12,
+    borderRadius: 15,
     marginTop: '10%',
+    borderColor: COLORS.primary,
+    borderWidth: 2.5,
   },
-  buttonIcon: { marginRight: 8 },
-  buttonContentRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
-  buttonText: { color: COLORS.white, fontWeight: 'bold', fontSize: 16 },
+  buttonIcon: {
+    marginRight: 8
+  },
+  buttonContentRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  buttonText: {
+    color: COLORS.primary,
+    fontWeight: 'bold',
+    fontSize: 16
+  },
 })
