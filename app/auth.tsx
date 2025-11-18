@@ -12,6 +12,7 @@ import InitialStep from '../components/auth/initialStep'
 import NameStep from '../components/auth/nameStep'
 import PasswordStep from '../components/auth/passwordStep'
 import QuestionnaireStep, { QuestionnaireStepHandle } from '../components/auth/questionnaireStep'
+import ErrorDialog from '../components/ErrorDialog'
 import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
@@ -24,6 +25,7 @@ export default function AuthScreen() {
   const [name, setName] = useState('')
   const [questionnaire, setQuestionnaire] = useState<any>({})
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { beginOnboarding, startCelebration } = useAuth()
   const questionnaireRef = useRef<QuestionnaireStepHandle>(null)
 
@@ -63,7 +65,7 @@ export default function AuthScreen() {
 
   const handleAuth = async (mode: 'signIn' | 'signUp') => {
     if (!email || !password) {
-      alert('Please enter email and password')
+      setErrorMessage('Please enter email and password')
       return
     }
 
@@ -77,7 +79,7 @@ export default function AuthScreen() {
     const { error } = await action
 
     if (error) {
-      alert(error.message)
+      setErrorMessage(error.message)
       setLoading(false)
       return
     }
@@ -146,6 +148,12 @@ export default function AuthScreen() {
             }}
           />
         )}
+
+        <ErrorDialog
+          visible={!!errorMessage}
+          message={errorMessage ?? ''}
+          onClose={() => setErrorMessage(null)}
+        />
 
       </ScrollView>
     </KeyboardAvoidingView>

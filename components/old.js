@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
   ActivityIndicator,
-  Alert,
   AppState,
   Image,
   KeyboardAvoidingView,
@@ -15,11 +14,13 @@ import {
 } from 'react-native'
 import { Octicons } from '@expo/vector-icons'
 import { supabase } from '../lib/supabase'
+import ErrorDialog from './ErrorDialog'
 
 export default function Auth() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState(null)
   
   const passwordInputRef = useRef(null)
 
@@ -37,7 +38,7 @@ export default function Auth() {
 
   const signInWithEmail = async () => {
     if (!email || !password) {
-      Alert.alert('Please enter email and password')
+      setErrorMessage('Please enter email and password')
       return
     }
 
@@ -47,13 +48,13 @@ export default function Auth() {
       password,
     })
 
-    if (error) Alert.alert(error.message)
+    if (error) setErrorMessage(error.message)
     setLoading(false)
   }
 
   const signUpWithEmail = async () => {
     if (!email || !password) {
-      Alert.alert('Please enter email and password')
+      setErrorMessage('Please enter email and password')
       return
     }
 
@@ -66,8 +67,8 @@ export default function Auth() {
       password,
     })
 
-    if (error) Alert.alert(error.message)
-    else if (!session) Alert.alert('Please check your inbox for email verification!')
+    if (error) setErrorMessage(error.message)
+    else if (!session) setErrorMessage('Please check your inbox for email verification!')
 
     setLoading(false)
   }
@@ -148,6 +149,12 @@ export default function Auth() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      <ErrorDialog
+        visible={Boolean(errorMessage)}
+        message={errorMessage || ''}
+        onClose={() => setErrorMessage(null)}
+      />
     </KeyboardAvoidingView>
   )
 }

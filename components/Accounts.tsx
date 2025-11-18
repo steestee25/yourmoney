@@ -1,14 +1,16 @@
 import { Button, Input } from '@rneui/base'
 import { Session } from '@supabase/supabase-js'
 import { useEffect, useState } from 'react'
-import { Alert, StyleSheet, View } from 'react-native'
+import { StyleSheet, View } from 'react-native'
 import { supabase } from '../lib/supabase'
+import ErrorDialog from './ErrorDialog'
 
 export default function Account({ session }: { session: Session }) {
   const [loading, setLoading] = useState(true)
   const [username, setUsername] = useState('')
   const [website, setWebsite] = useState('')
   const [avatarUrl, setAvatarUrl] = useState('')
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   useEffect(() => {
     if (session) getProfile()
@@ -35,7 +37,7 @@ export default function Account({ session }: { session: Session }) {
       }
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert(error.message)
+        setErrorMessage(error.message)
       }
     } finally {
       setLoading(false)
@@ -70,7 +72,7 @@ export default function Account({ session }: { session: Session }) {
       }
     } catch (error) {
       if (error instanceof Error) {
-        Alert.alert(error.message)
+        setErrorMessage(error.message)
       }
     } finally {
       setLoading(false)
@@ -100,6 +102,12 @@ export default function Account({ session }: { session: Session }) {
       <View style={styles.verticallySpaced}>
         <Button title="Sign Out" onPress={() => supabase.auth.signOut()} />
       </View>
+
+      <ErrorDialog
+        visible={!!errorMessage}
+        message={errorMessage ?? ''}
+        onClose={() => setErrorMessage(null)}
+      />
     </View>
   )
 }
