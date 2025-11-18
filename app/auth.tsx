@@ -24,7 +24,7 @@ export default function AuthScreen() {
   const [name, setName] = useState('')
   const [questionnaire, setQuestionnaire] = useState<any>({})
   const [loading, setLoading] = useState(false)
-  const { beginOnboarding, finishOnboarding } = useAuth()
+  const { beginOnboarding, startCelebration } = useAuth()
   const questionnaireRef = useRef<QuestionnaireStepHandle>(null)
 
   useEffect(() => {
@@ -84,7 +84,7 @@ export default function AuthScreen() {
 
     if (mode === 'signIn') {
       setLoading(false)
-      finishOnboarding()
+      startCelebration()
       return
     }
 
@@ -141,8 +141,8 @@ export default function AuthScreen() {
             onBack={() => setStep('name')}
             onComplete={(answers) => {
               setQuestionnaire(answers)
-              // next: save to DB then finish onboarding
-              finishOnboarding()
+              // next: save to DB then celebrate and finish onboarding
+              startCelebration()
             }}
           />
         )}

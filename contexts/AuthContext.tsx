@@ -6,22 +6,29 @@ type AuthContextType = {
   session: Session | null
   loading: boolean
   isOnboarding: boolean
+  isCelebrating: boolean
   beginOnboarding: () => void
   finishOnboarding: () => void
+  startCelebration: () => void
+  endCelebration: () => void
 }
 
 const AuthContext = createContext<AuthContextType>({
   session: null,
   loading: true,
   isOnboarding: false,
+  isCelebrating: false,
   beginOnboarding: () => {},
   finishOnboarding: () => {},
+  startCelebration: () => {},
+  endCelebration: () => {},
 })
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const [isOnboarding, setIsOnboarding] = useState(false)
+  const [isCelebrating, setIsCelebrating] = useState(false)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -33,6 +40,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setSession(session)
       if (!session) {
         setIsOnboarding(false)
+        setIsCelebrating(false)
       }
     })
 
@@ -45,8 +53,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         session,
         loading,
         isOnboarding,
+        isCelebrating,
         beginOnboarding: () => setIsOnboarding(true),
         finishOnboarding: () => setIsOnboarding(false),
+        startCelebration: () => {
+          setIsCelebrating(true)
+          setIsOnboarding(false)
+        },
+        endCelebration: () => setIsCelebrating(false),
       }}
     >
       {children}

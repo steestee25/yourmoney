@@ -47,7 +47,8 @@
     "react-native-ui-datepicker": "^3.1.2",
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
-    "expo-secure-store": "~14.2.4"
+    "expo-secure-store": "~14.2.4",
+    "lottie-react-native": "7.2.2"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

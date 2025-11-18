@@ -84,6 +84,7 @@ export default function EmailStep({ email, setEmail, onNext, onBack }: Props) {
 
       {/* ANIMATED CONTENT (starts lower + stays under back arrow) */}
       <Animated.View
+      pointerEvents="box-none"
         style={[
           styles.animatedBlock,
           { transform: [{ translateY: contentTranslateY }] }

@@ -4,6 +4,7 @@ import { ActivityIndicator, AppState, StyleSheet, View } from 'react-native'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import Auth from './auth'
+import CelebrationScreen from '../components/CelebrationScreen'
 
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
@@ -14,7 +15,7 @@ AppState.addEventListener('change', (state) => {
 })
 
 function RootLayoutContent() {
-  const { session, loading, isOnboarding } = useAuth()
+  const { session, loading, isOnboarding, isCelebrating, endCelebration } = useAuth()
 
   if (loading) {
     return (
@@ -22,6 +23,10 @@ function RootLayoutContent() {
         <ActivityIndicator size="large" color="#9CF1F0" />
       </View>
     )
+  }
+
+  if (isCelebrating) {
+    return <CelebrationScreen onFinish={endCelebration} />
   }
 
   if (!session || isOnboarding) {
