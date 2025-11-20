@@ -31,6 +31,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isCelebrating, setIsCelebrating] = useState(false)
 
   useEffect(() => {
+    // Enter the object → take "data" → inside "data" take "session"
+    // → create "session" variable
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session)
       setLoading(false)
@@ -48,6 +50,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
+    // Allows all children components to access AuthContext values
+    // So anyone using useAuth() can access these values and call these functions
     <AuthContext.Provider
       value={{
         session,
@@ -68,4 +72,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 }
 
+// Allow other components to use the AuthContext values using useAuth() hook
+// Hiding the useContext(AuthContext) implementation details
+// Instead of: const { session, loading } = useContext(AuthContext)
+// Use: const { session, loading } = useAuth()
 export const useAuth = () => useContext(AuthContext)

@@ -1,11 +1,13 @@
 // app/_layout.tsx
+import LoadingIndicator from '@/components/LoadingIndicator'
 import { Stack } from 'expo-router'
-import { ActivityIndicator, AppState, StyleSheet, View } from 'react-native'
+import { AppState, StyleSheet } from 'react-native'
+import CelebrationScreen from '../components/CelebrationScreen'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 import Auth from './auth'
-import CelebrationScreen from '../components/CelebrationScreen'
 
+// Global listener that starts/stops auto token refresh based on app state
 AppState.addEventListener('change', (state) => {
   if (state === 'active') {
     supabase.auth.startAutoRefresh()
@@ -15,24 +17,14 @@ AppState.addEventListener('change', (state) => {
 })
 
 function RootLayoutContent() {
+  // Get auth state values from context
   const { session, loading, isOnboarding, isCelebrating, endCelebration } = useAuth()
 
-  if (loading) {
-    return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#9CF1F0" />
-      </View>
-    )
-  }
+  if (loading) return <LoadingIndicator />
+  if (isCelebrating) return <CelebrationScreen onFinish={endCelebration} />
+  if (!session || isOnboarding) return <Auth /> // Show auth stack (login/signup/onboarding)
 
-  if (isCelebrating) {
-    return <CelebrationScreen onFinish={endCelebration} />
-  }
-
-  if (!session || isOnboarding) {
-    return <Auth />
-  }
-
+  // In all other cases, show the main app stack (tabs)
   return (
     <Stack screenOptions={{ headerShown: false }}>
       <Stack.Screen name="(tabs)" />
