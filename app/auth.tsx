@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react'
 import {
-  AppState,
   BackHandler,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  StyleSheet,
+  StyleSheet
 } from 'react-native'
 import EmailStep from '../components/auth/emailStep'
 import InitialStep from '../components/auth/initialStep'
@@ -27,19 +26,9 @@ export default function AuthScreen() {
   const [questionnaire, setQuestionnaire] = useState<QuestionnaireAnswers>({})
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  // Take from context the beginOnboarding and startCelebration functions
   const { beginOnboarding, startCelebration } = useAuth()
   const questionnaireRef = useRef<QuestionnaireStepHandle>(null)
-
-  useEffect(() => {
-    const subscription = AppState.addEventListener('change', (state) => {
-      if (state === 'active') {
-        supabase.auth.startAutoRefresh()
-      } else {
-        supabase.auth.stopAutoRefresh()
-      }
-    })
-    return () => subscription.remove()
-  }, [])
 
   useEffect(() => {
     const handler = BackHandler.addEventListener('hardwareBackPress', () => {
