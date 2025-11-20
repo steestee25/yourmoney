@@ -17,13 +17,14 @@ import { useAuth } from '../contexts/AuthContext'
 import { supabase } from '../lib/supabase'
 
 type AuthStep = 'initial' | 'email' | 'password' | 'name' | 'questionnaire'
+type QuestionnaireAnswers = Record<string, string | string[] | null>
 
 export default function AuthScreen() {
   const [step, setStep] = useState<AuthStep>('initial')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [name, setName] = useState('')
-  const [questionnaire, setQuestionnaire] = useState<any>({})
+  const [questionnaire, setQuestionnaire] = useState<QuestionnaireAnswers>({})
   const [loading, setLoading] = useState(false)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const { beginOnboarding, startCelebration } = useAuth()
@@ -101,6 +102,39 @@ export default function AuthScreen() {
     // Next onboarding steps (e.g. questionnaire) can be triggered here later on
   }
 
+  const handleQuestionnaireComplete = async (answers: QuestionnaireAnswers) => {
+    try {
+      setLoading(true)
+      const {
+        data: { user },
+        error: userError,
+      } = await supabase.auth.getUser()
+      if (userError) throw userError
+      if (!user) throw new Error('No authenticated user found')
+
+      const updates = {
+        id: user.id,
+        full_name: name,
+        questionnaire_answers: answers,
+        updated_at: new Date(),
+      }
+
+      const { error } = await supabase.from('profiles').upsert(updates)
+      if (error) throw error
+
+      setQuestionnaire(answers)
+      startCelebration()
+    } catch (error) {
+      if (error instanceof Error) {
+        setErrorMessage(error.message)
+      } else {
+        setErrorMessage('Unable to save questionnaire answers.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <KeyboardAvoidingView
       style={styles.container}
@@ -141,11 +175,7 @@ export default function AuthScreen() {
           <QuestionnaireStep
             ref={questionnaireRef}
             onBack={() => setStep('name')}
-            onComplete={(answers) => {
-              setQuestionnaire(answers)
-              // next: save to DB then celebrate and finish onboarding
-              startCelebration()
-            }}
+            onComplete={handleQuestionnaireComplete}
           />
         )}
 
