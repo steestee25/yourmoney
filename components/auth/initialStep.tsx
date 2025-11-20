@@ -1,4 +1,3 @@
-import { Octicons } from '@expo/vector-icons'
 import React from 'react'
 import {
   ActivityIndicator,
@@ -19,9 +18,17 @@ interface Props {
 export default function InitialStep({ onNext, loading }: Props) {
   return (
     <View style={{ width: '100%' }}>
+      <View style={styles.logoView}>
+        <Image
+          source={require('../../assets/images/coin_logo_no_bg.png')}
+          style={styles.logo}
+          resizeMode="contain"
+        />
+      </View>
+
       <Image
-        source={require('../../assets/images/logo.png')}
-        style={styles.logo}
+        source={require('../../assets/images/main3.png')}
+        style={{ width: '105%', height: 450 }}
         resizeMode="contain"
       />
 
@@ -35,7 +42,6 @@ export default function InitialStep({ onNext, loading }: Props) {
             <ActivityIndicator color={COLORS.white} />
           ) : (
             <View style={styles.buttonContentRow}>
-              <Octicons name="mail" size={24} color={COLORS.primary} style={styles.buttonIcon} />
               <Text style={styles.buttonText}>Login with Email</Text>
             </View>
           )}
@@ -46,12 +52,20 @@ export default function InitialStep({ onNext, loading }: Props) {
 }
 
 const styles = StyleSheet.create({
-  logo: {
-    width: 400,
-    height: 400,
+  logoView: {
+    height: 80,
+    width: 80,
+    backgroundColor: COLORS.temp2,
+    alignContent: 'center',
+    justifyContent: 'center',
     alignSelf: 'center',
-    marginBottom: '3%',
-    marginTop: '30%',
+    borderRadius: 20,
+    marginTop: '20%'
+  },
+  logo: {
+    width: 100,
+    height: 100,
+    alignSelf: 'center',
   },
   verticallySpaced: {
     paddingVertical: 4,
@@ -61,13 +75,10 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   button: {
-    backgroundColor: COLORS.white,
+    backgroundColor: COLORS.primaryLight,
     padding: 15,
     alignItems: 'center',
     borderRadius: 15,
-    marginTop: '10%',
-    borderColor: COLORS.primary,
-    borderWidth: 2.5,
   },
   buttonIcon: {
     marginRight: 8
@@ -78,7 +89,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center'
   },
   buttonText: {
-    color: COLORS.primary,
+    color: COLORS.white,
     fontWeight: 'bold',
     fontSize: 16
   },

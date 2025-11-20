@@ -4,4 +4,7 @@ export const COLORS = {
   borderWhite: '#f0f0f0eb',
   primary: '#00ecec',
   primaryLight: '#00ecec8d',
+  primaryLightOpacity: '#d6fffb',
+  temp: '#666',
+  temp2: '#d6fffb',
 }

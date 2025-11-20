@@ -16,7 +16,7 @@ export default function CelebrationScreen({ onFinish }: Props) {
   }, [onFinish])
 
   useEffect(() => {
-    const timer = setTimeout(handleFinish, 4800)
+    const timer = setTimeout(handleFinish, 5200)
     return () => clearTimeout(timer)
   }, [handleFinish])
 
