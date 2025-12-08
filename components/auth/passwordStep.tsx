@@ -12,6 +12,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native'
+import { useTranslation } from '../../lib/i18n'
 
 interface Props {
   email: string
@@ -32,6 +33,7 @@ export default function PasswordStep({
   onSignUp,
   loading,
 }: Props) {
+  const { t } = useTranslation()
   const inputRef = useRef<TextInput>(null)
   const [showPassword, setShowPassword] = useState(false)
 
@@ -117,7 +119,7 @@ export default function PasswordStep({
             },
           ]}
         >
-          Insert your password
+          {t('auth.passwordStep.title')}
         </Animated.Text>
 
         <View style={styles.passwordContainer}>
@@ -155,7 +157,7 @@ export default function PasswordStep({
           {loading ? (
             <ActivityIndicator color={COLORS.white} />
           ) : (
-            <Text style={styles.buttonText}>Sign in</Text>
+            <Text style={styles.buttonText}>{t('auth.passwordStep.buttonNext')}</Text>
           )}
         </TouchableOpacity>
 

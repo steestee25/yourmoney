@@ -11,6 +11,7 @@ import {
   TouchableOpacity,
   View
 } from 'react-native'
+import { useTranslation } from '../../lib/i18n'
 
 interface Props {
   email: string
@@ -20,6 +21,7 @@ interface Props {
 }
 
 export default function EmailStep({ email, setEmail, onNext, onBack }: Props) {
+  const { t } = useTranslation()
   const [error, setError] = useState('')
   const [isFocused, setIsFocused] = useState(false)
 
@@ -106,7 +108,7 @@ export default function EmailStep({ email, setEmail, onNext, onBack }: Props) {
             },
           ]}
         >
-          Insert your email
+          {t('auth.emailStep.title')}
         </Animated.Text>
 
         <TextInput
@@ -137,7 +139,7 @@ export default function EmailStep({ email, setEmail, onNext, onBack }: Props) {
           ]}
           onPress={handleNext}
         >
-          <Text style={styles.buttonText}>Next</Text>
+          <Text style={styles.buttonText}>{t('auth.emailStep.buttonNext')}</Text>
         </TouchableOpacity>
       </Animated.View>
     </View>

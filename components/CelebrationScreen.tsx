@@ -1,12 +1,14 @@
 import LottieView from 'lottie-react-native'
 import React, { useCallback, useEffect, useRef } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
+import { useTranslation } from '../lib/i18n'
 
 type Props = {
   onFinish: () => void
 }
 
 export default function CelebrationScreen({ onFinish }: Props) {
+  const { t } = useTranslation()
   const hasFinished = useRef(false)
 
   const handleFinish = useCallback(() => {
@@ -29,8 +31,8 @@ export default function CelebrationScreen({ onFinish }: Props) {
         onAnimationFinish={handleFinish}
         style={styles.lottie}
       />
-      <Text style={styles.title}>Welcome!</Text>
-      <Text style={styles.subtitle}>Getting your app ready...</Text>
+      <Text style={styles.title}>{t('celebration.congrats')}</Text>
+      <Text style={styles.subtitle}>{t('celebration.message')}</Text>
     </View>
   )
 }

@@ -10,6 +10,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native'
+import { useTranslation } from '../../lib/i18n'
 
 interface Props {
     name: string
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function NameStep({ name, setName, onNext }: Props) {
+    const { t } = useTranslation()
     const [error, setError] = useState('')
     const [isFocused, setIsFocused] = useState(false)
 
@@ -90,7 +92,7 @@ export default function NameStep({ name, setName, onNext }: Props) {
                         },
                     ]}
                 >
-                    What's your name?
+                    {t('auth.nameStep.title')}
                 </Animated.Text>
 
                 <TextInput
@@ -120,7 +122,7 @@ export default function NameStep({ name, setName, onNext }: Props) {
                     ]}
                     onPress={handleNext}
                 >
-                    <Text style={styles.buttonText}>Next</Text>
+                    <Text style={styles.buttonText}>{t('auth.nameStep.buttonNext')}</Text>
                 </TouchableOpacity>
             </Animated.View>
         </View>

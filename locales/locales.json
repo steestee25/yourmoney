@@ -1,0 +1,90 @@
+{
+    "en": {
+        "tabs": {
+            "home": "Home",
+            "about": "About",
+            "advices": "Advices",
+            "chat": "Chat"
+        },
+        "common": {
+            "next": "Next",
+            "back": "Back",
+            "save": "Save",
+            "cancel": "Cancel",
+            "loading": "Loading...",
+            "welcome": "Welcome to YourMoney"
+        },
+        "auth": {
+            "initialStep": {
+                "buttonNext": "Login with Email"
+            },
+            "emailStep": {
+                "title": "Enter your email",
+                "subtitle": "We will send a confirmation link",
+                "buttonNext": "Next"
+            },
+            "nameStep": {
+                "title": "What's your name?",
+                "buttonNext": "Next"
+            },
+            "passwordStep": {
+                "title": "Choose a password",
+                "buttonNext": "Next"
+            }
+        },
+        "home":{
+            "greeting": "Hello, {{name}}!"
+        },
+        "about": {
+            "logout": "Logout"
+        },
+        "celebration": {
+            "congrats": "Congratulations!",
+            "message": "You've completed the setup"
+        }
+    },
+    "it": {
+        "tabs": {
+            "home": "Home",
+            "about": "Informazioni",
+            "advices": "Consigli",
+            "chat": "Chat"
+        },
+        "common": {
+            "next": "Avanti",
+            "back": "Indietro",
+            "save": "Salva",
+            "cancel": "Annulla",
+            "loading": "Caricamento...",
+            "welcome": "Benvenuto in YourMoney"
+        },
+        "auth": {
+            "initialStep": {
+                "buttonNext": "Login con Email"
+            },
+            "emailStep": {
+                "title": "Inserisci la tua email",
+                "subtitle": "Ti invieremo un link di conferma",
+                "buttonNext": "Avanti"
+            },
+            "nameStep": {
+                "title": "Come ti chiami?",
+                "buttonNext": "Avanti"
+            },
+            "passwordStep": {
+                "title": "Scegli una password",
+                "buttonNext": "Avanti"
+            }
+        },
+        "home":{
+            "greeting": "Hello, {{name}}!"
+        },
+        "about": {
+            "logout": "Esci"
+        },
+        "celebration": {
+            "congrats": "Complimenti!",
+            "message": "Hai completato la configurazione"
+        }
+    }
+}

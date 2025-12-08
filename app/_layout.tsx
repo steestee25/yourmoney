@@ -4,6 +4,7 @@ import { Stack } from 'expo-router'
 import { AppState, StyleSheet } from 'react-native'
 import CelebrationScreen from '../components/CelebrationScreen'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
+import { I18nProvider } from '../lib/i18n'
 import { supabase } from '../lib/supabase'
 import Auth from './auth'
 
@@ -34,9 +35,11 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <AuthProvider>
-      <RootLayoutContent />
-    </AuthProvider>
+    <I18nProvider>
+      <AuthProvider>
+        <RootLayoutContent />
+      </AuthProvider>
+    </I18nProvider>
   )
 }
 

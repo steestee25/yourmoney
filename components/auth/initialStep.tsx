@@ -10,6 +10,7 @@ import {
 } from 'react-native'
 
 import { COLORS } from '@/constants/color'
+import { useTranslation } from '../../lib/i18n'
 
 // Receives callback and loading state as props 
 interface Props {
@@ -18,6 +19,7 @@ interface Props {
 }
 
 export default function InitialStep({ onNext, loading }: Props) {
+  const { t } = useTranslation()
   const handlePress = async () => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     onNext()
@@ -49,7 +51,7 @@ export default function InitialStep({ onNext, loading }: Props) {
             <ActivityIndicator color={COLORS.white} />
           ) : (
             <View style={styles.buttonContentRow}>
-              <Text style={styles.buttonText}>Login with Email</Text>
+              <Text style={styles.buttonText}>{t('auth.initialStep.buttonNext')}</Text>
             </View>
           )}
         </TouchableOpacity>
