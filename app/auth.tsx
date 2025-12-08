@@ -32,6 +32,7 @@ export default function AuthScreen() {
 
   useEffect(() => {
     const handler = BackHandler.addEventListener('hardwareBackPress', () => {
+      // return true to indicate we've handled the back button press (prevent default behavior)
       if (step === 'email') {
         setStep('initial')
         return true
@@ -45,13 +46,15 @@ export default function AuthScreen() {
         return true
       }
       if (step === 'questionnaire') {
+        // If questionnaire step.current is defined, call its children goBack method
         questionnaireRef.current?.goBack()
         return true
       }
       return false
     })
+    // Cleanup on unmount: when the component unmounts, remove the back handler
     return () => handler.remove()
-  }, [step])
+  }, [step]) // Dependency on step to update the handler when step changes
 
   const handleAuth = async (mode: 'signIn' | 'signUp') => {
     if (!email || !password) {
@@ -86,11 +89,6 @@ export default function AuthScreen() {
     setStep('name')
   }
 
-  const handleNameNext = () => {
-    setStep('questionnaire')
-    // Next onboarding steps (e.g. questionnaire) can be triggered here later on
-  }
-
   const handleQuestionnaireComplete = async (answers: QuestionnaireAnswers) => {
     try {
       setLoading(true)
@@ -111,7 +109,7 @@ export default function AuthScreen() {
       const { error } = await supabase.from('profiles').upsert(updates)
       if (error) throw error
 
-      setQuestionnaire(answers)
+      //setQuestionnaire(answers)
       startCelebration()
     } catch (error) {
       if (error instanceof Error) {
@@ -157,7 +155,7 @@ export default function AuthScreen() {
         )}
 
         {step === 'name' && (
-          <NameStep name={name} setName={setName} onNext={handleNameNext} />
+          <NameStep name={name} setName={setName} onNext={() => setStep('questionnaire')} />
         )}
 
         {step === 'questionnaire' && (
@@ -169,7 +167,7 @@ export default function AuthScreen() {
         )}
 
         <ErrorDialog
-          visible={!!errorMessage}
+          visible={!!errorMessage} // Show dialog if errorMessage is not null
           message={errorMessage ?? ''}
           onClose={() => setErrorMessage(null)}
         />

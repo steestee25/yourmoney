@@ -1,5 +1,6 @@
 import { COLORS } from '@/constants/color'
 import { MaterialIcons } from '@expo/vector-icons'
+import * as Haptics from 'expo-haptics'
 import React, { useRef, useState } from 'react'
 import {
   Animated,
@@ -27,13 +28,19 @@ export default function EmailStep({ email, setEmail, onNext, onBack }: Props) {
 
   const isValidEmail = (value: string) => /\S+@\S+\.\S+/.test(value)
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (!isValidEmail(email)) {
       setError('Email non valida')
       return
     }
     setError('')
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     onNext()
+  }
+
+  const handleBackPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    onBack()
   }
 
   const handleFocus = () => {
@@ -78,7 +85,7 @@ export default function EmailStep({ email, setEmail, onNext, onBack }: Props) {
     <View style={styles.container}>
 
       {/* FIXED Back Arrow */}
-      <TouchableOpacity onPress={onBack} style={styles.backIcon}>
+      <TouchableOpacity onPress={handleBackPress} style={styles.backIcon}>
         <MaterialIcons name="arrow-back" size={28} color="#00C6D3" />
       </TouchableOpacity>
 

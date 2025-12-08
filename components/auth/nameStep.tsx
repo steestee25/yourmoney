@@ -1,4 +1,5 @@
 import { COLORS } from '@/constants/color'
+import * as Haptics from 'expo-haptics'
 import React, { useRef, useState } from 'react'
 import {
     Animated,
@@ -23,12 +24,13 @@ export default function NameStep({ name, setName, onNext }: Props) {
     // Animation for ONLY title, input, button
     const contentAnim = useRef(new Animated.Value(0)).current
 
-    const handleNext = () => {
+    const handleNext = async () => {
         if (!name.trim()) {
             setError('Please insert your name')
             return
         }
         setError('')
+        await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
         onNext()
     }
 

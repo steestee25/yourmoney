@@ -1,5 +1,6 @@
 import { COLORS } from '@/constants/color'
 import { MaterialIcons } from '@expo/vector-icons'
+import * as Haptics from 'expo-haptics'
 import React, { useRef, useState } from 'react'
 import {
   ActivityIndicator,
@@ -57,6 +58,26 @@ export default function PasswordStep({
     }
   }
 
+  const handleBackPress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    onBack()
+  }
+
+  const handleSignIn = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    onSignIn()
+  }
+
+  const handleSignUp = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    onSignUp()
+  }
+
+  const handleTogglePassword = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light)
+    setShowPassword(!showPassword)
+  }
+
   const contentTranslateY = contentAnim.interpolate({
     inputRange: [0, 1],
     outputRange: [110, -50], // move UP
@@ -75,7 +96,7 @@ export default function PasswordStep({
   return (
     <View style={styles.container}>
       {/* Freccia BACK statica */}
-      <TouchableOpacity onPress={onBack} style={styles.backIcon}>
+      <TouchableOpacity onPress={handleBackPress} style={styles.backIcon}>
         <MaterialIcons name="arrow-back" size={28} color="#00C6D3" />
       </TouchableOpacity>
 
@@ -116,7 +137,7 @@ export default function PasswordStep({
           />
           <TouchableOpacity
             style={styles.iconButton}
-            onPress={() => setShowPassword(!showPassword)}
+            onPress={handleTogglePassword}
           >
             <MaterialIcons
               name={showPassword ? 'visibility' : 'visibility-off'}
@@ -128,7 +149,7 @@ export default function PasswordStep({
 
         <TouchableOpacity
           style={[styles.button, styles.signin]}
-          onPress={onSignIn}
+          onPress={handleSignIn}
           disabled={loading}
         >
           {loading ? (
@@ -140,7 +161,7 @@ export default function PasswordStep({
 
         <View style={styles.signupPrompt}>
           <Text style={styles.signupText}>Don't have an account? </Text>
-          <TouchableOpacity onPress={onSignUp} disabled={loading}>
+          <TouchableOpacity onPress={handleSignUp} disabled={loading}>
             <Text style={styles.signupLink}>Sign up</Text>
           </TouchableOpacity>
         </View>

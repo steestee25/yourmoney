@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics'
 import React from 'react'
 import {
   ActivityIndicator,
@@ -10,12 +11,18 @@ import {
 
 import { COLORS } from '@/constants/color'
 
+// Receives callback and loading state as props 
 interface Props {
   onNext: () => void
   loading: boolean
 }
 
 export default function InitialStep({ onNext, loading }: Props) {
+  const handlePress = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+    onNext()
+  }
+
   return (
     <View style={{ width: '100%' }}>
       <View style={styles.logoView}>
@@ -35,7 +42,7 @@ export default function InitialStep({ onNext, loading }: Props) {
       <View style={[styles.verticallySpaced, styles.mt20]}>
         <TouchableOpacity
           style={styles.button}
-          onPress={onNext}
+          onPress={handlePress}
           disabled={loading}
         >
           {loading ? (

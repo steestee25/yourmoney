@@ -1,6 +1,7 @@
 import { COLORS } from '@/constants/color'
 import { onboardingQuestions, Question } from '@/constants/questionnaire'
 import { MaterialIcons } from '@expo/vector-icons'
+import * as Haptics from 'expo-haptics'
 import React, { forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import {
   Animated,
@@ -48,7 +49,8 @@ const QuestionnaireStep = forwardRef<QuestionnaireStepHandle, Props>(function Qu
   }, [index])
 
   // --- Handle selection (single or multiple) ---
-  const handleSelect = (value: string) => {
+  const handleSelect = async (value: string) => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     const updated = [...questions]
     const q = updated[index]
 
@@ -67,12 +69,14 @@ const QuestionnaireStep = forwardRef<QuestionnaireStepHandle, Props>(function Qu
     setQuestions(updated)
   }
 
-  const handleNext = () => {
+  const handleNext = async () => {
     const answered = current.multiple
       ? Array.isArray(current.answer) && current.answer.length > 0
       : !!current.answer
 
     if (!answered) return
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
 
     if (index < total - 1) {
       setIndex(index + 1)
@@ -83,7 +87,8 @@ const QuestionnaireStep = forwardRef<QuestionnaireStepHandle, Props>(function Qu
     }
   }
 
-  const handleBack = () => {
+  const handleBack = async () => {
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
     if (index === 0) return onBack()
     setIndex(index - 1)
   }
