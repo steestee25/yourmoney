@@ -1,5 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
@@ -7,6 +7,7 @@ import TransactionModal from "../../components/TransactionModal";
 import { styles } from "../../styles/home.styles";
 
 import { useAuth } from '../../contexts/AuthContext';
+import { supabase } from '../../lib/supabase';
 
 import { COLORS } from '../../constants/color';
 
@@ -23,13 +24,42 @@ export default function Index() {
 
   const { session } = useAuth()
 
+  const [profile, setProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (!session?.user?.id) return;
+
+    const fetchProfile = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('profiles')
+          .select('full_name')
+          .eq('id', session.user.id)
+          .single();
+
+        if (error) {
+          console.log('Error fetching profile:', error.message || error);
+          return;
+        }
+
+        setProfile(data || null);
+        console.log('Profile from DB:', data);
+      } catch (err) {
+        console.log('Unexpected error fetching profile:', err);
+      }
+    };
+
+    fetchProfile();
+  }, [session]);
+
   // Stampa tutti i dati della sessione
   console.log('Session completa:', session)
 
   // Stampa dati specifici dell'utente
   console.log('User ID:', session?.user?.id)
   console.log('Email:', session?.user?.email)
-  console.log('User metadata:', session?.user?.user_metadata)
+  console.log('Dati metadata:', session?.user?.user_metadata)
+  console.log('Profile state:', profile)
   console.log('Access token:', session?.access_token)
 
   const data = [
@@ -312,7 +342,7 @@ export default function Index() {
 
       <View style={styles.containerHeader}>
         <Text style={styles.textHelloMessage}>
-          Hello, <Text style={{ fontWeight: "bold" }}>Stefano</Text>
+          Hello, <Text style={{ fontWeight: "bold" }}>{profile?.full_name || session?.user?.user_metadata?.full_name}</Text>
         </Text>
 
         <View style={styles.iconSearch}>
