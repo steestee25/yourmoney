@@ -7,8 +7,10 @@ import TransactionModal from "../../components/TransactionModal";
 import { styles } from "../../styles/home.styles";
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from '../../lib/i18n';
 import { supabase } from '../../lib/supabase';
 import { createTransaction, fetchUserTransactions, groupTransactionsByDay } from '../../lib/transactions';
+import locales from '../../locales/locales.json';
 
 import { COLORS } from '../../constants/color';
 
@@ -29,6 +31,20 @@ export default function Index() {
   const { session } = useAuth()
 
   const [profile, setProfile] = useState<any>(null);
+
+  const { locale } = useTranslation();
+
+  // categories loaded from locales.json (icon, color, label)
+  const categoriesFromLocale: Record<string, any> = (locales as any)[locale]?.categories || {};
+  const categoryIcons: Record<string, string> = Object.fromEntries(
+    Object.entries(categoriesFromLocale).map(([k, v]) => [k, v.icon])
+  );
+  const categoryColors: Record<string, string> = Object.fromEntries(
+    Object.entries(categoriesFromLocale).map(([k, v]) => [k, v.color])
+  );
+  const categoryLabels: Record<string, string> = Object.fromEntries(
+    Object.entries(categoriesFromLocale).map(([k, v]) => [k, v.label])
+  );
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -64,50 +80,6 @@ export default function Index() {
       setIsLoadingTransactions(true);
       try {
         const transactions = await fetchUserTransactions(session.user.id);
-        const categoryIcons = {
-          'Clothing': '👕',
-          'Electronics': '📱',
-          'Car': '🚗',
-          'Groceries': '🛒',
-          'Entertainment': '🎬',
-          'Food & Drink': '☕',
-          'Shopping': '📦',
-          'Health & Fitness': '💪',
-          'Medicines': '💊',
-          'Travel': '✈️',
-          'Bills': '🧾',
-          'Dentist': '🦷',
-          'Education': '🎓',
-          'Pets': '🐾',
-          'Gifts': '🎁',
-          'Medical Visits': '🏥',
-          'Phone': '📞',
-          'Extras': '🛍️',
-          'Restaurant': '🍽️',
-          'Public Transport': '🚌',
-        };
-        const categoryColors = {
-          'Clothing': '#4285F4',
-          'Electronics': '#34A853',
-          'Car': '#FBBC04',
-          'Groceries': '#EA4335',
-          'Entertainment': '#9333EA',
-          'Food & Drink': '#10B981',
-          'Shopping': '#FF6B35',
-          'Health & Fitness': '#8B5CF6',
-          'Medicines': '#F44336',
-          'Travel': '#00B8D9',
-          'Bills': '#FFAB00',
-          'Dentist': '#00C853',
-          'Education': '#1976D2',
-          'Pets': '#FF8A65',
-          'Gifts': '#C51162',
-          'Medical Visits': '#009688',
-          'Phone': '#607D8B',
-          'Extras': '#7C4DFF',
-          'Restaurant': '#FF7043',
-          'Public Transport': '#388E3C',
-        };
         const grouped = groupTransactionsByDay(transactions, categoryIcons, categoryColors);
         setExpenseData(grouped);
       } catch (err) {
@@ -136,51 +108,7 @@ export default function Index() {
     frontColor: selectedIndex === index ? '#ffffff' : item.frontColor,
   }));
 
-  const categoryColors = {
-    'Clothing': '#4285F4',
-    'Electronics': '#34A853',
-    'Car': '#FBBC04',
-    'Groceries': '#EA4335',
-    'Entertainment': '#9333EA',
-    'Food & Drink': '#10B981',
-    'Shopping': '#FF6B35',
-    'Health & Fitness': '#8B5CF6',
-    'Medicines': '#F44336',
-    'Travel': '#00B8D9',
-    'Bills': '#FFAB00',
-    'Dentist': '#00C853',
-    'Education': '#1976D2',
-    'Pets': '#FF8A65',
-    'Gifts': '#C51162',
-    'Medical Visits': '#009688',
-    'Phone': '#607D8B',
-    'Extras': '#7C4DFF',
-    'Restaurant': '#FF7043',
-    'Public Transport': '#388E3C',
-  };
-
-  const categoryIcons = {
-    'Clothing': '👕',
-    'Electronics': '📱',
-    'Car': '🚗',
-    'Groceries': '🛒',
-    'Entertainment': '🎬',
-    'Food & Drink': '☕',
-    'Shopping': '📦',
-    'Health & Fitness': '💪',
-    'Medicines': '💊',
-    'Travel': '✈️',
-    'Bills': '🧾',
-    'Dentist': '🦷',
-    'Education': '🎓',
-    'Pets': '🐾',
-    'Gifts': '🎁',
-    'Medical Visits': '🏥',
-    'Phone': '📞',
-    'Extras': '🛍️',
-    'Restaurant': '🍽️',
-    'Public Transport': '🚌',
-  }
+  
 
   // Always sort days descending after updates
   const sortDaysDescending = (days) =>
@@ -212,24 +140,6 @@ export default function Index() {
       const dayTimestamp = new Date(newTransaction.date);
       dayTimestamp.setHours(0, 0, 0, 0);
       const dayId = dayTimestamp.getTime();
-
-      const categoryIcons = {
-        'Clothing': '👕', 'Electronics': '📱', 'Car': '🚗', 'Groceries': '🛒',
-        'Entertainment': '🎬', 'Food & Drink': '☕', 'Shopping': '📦',
-        'Health & Fitness': '💪', 'Medicines': '💊', 'Travel': '✈️',
-        'Bills': '🧾', 'Dentist': '🦷', 'Education': '🎓', 'Pets': '🐾',
-        'Gifts': '🎁', 'Medical Visits': '🏥', 'Phone': '📞', 'Extras': '🛍️',
-        'Restaurant': '🍽️', 'Public Transport': '🚌',
-      };
-      const categoryColors = {
-        'Clothing': '#4285F4', 'Electronics': '#34A853', 'Car': '#FBBC04',
-        'Groceries': '#EA4335', 'Entertainment': '#9333EA', 'Food & Drink': '#10B981',
-        'Shopping': '#FF6B35', 'Health & Fitness': '#8B5CF6', 'Medicines': '#F44336',
-        'Travel': '#00B8D9', 'Bills': '#FFAB00', 'Dentist': '#00C853',
-        'Education': '#1976D2', 'Pets': '#FF8A65', 'Gifts': '#C51162',
-        'Medical Visits': '#009688', 'Phone': '#607D8B', 'Extras': '#7C4DFF',
-        'Restaurant': '#FF7043', 'Public Transport': '#388E3C',
-      };
 
       const transactionWithUI = {
         ...savedTransaction,
@@ -344,7 +254,7 @@ export default function Index() {
           </View>
           <View>
             <Text style={styles.transactionName}>{transaction.name}</Text>
-            <Text style={styles.transactionCategory}>{transaction.category}</Text>
+            <Text style={styles.transactionCategory}>{categoryLabels[transaction.category] || transaction.category}</Text>
           </View>
         </View>
         <View style={styles.transactionRight}>

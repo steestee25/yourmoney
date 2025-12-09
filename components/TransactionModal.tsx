@@ -12,6 +12,7 @@ export default function TransactionModal({
     onCancel,
     categoryIcons,
     categoryColors,
+    categoryLabels,
 }) {
     const [name, setName] = useState("");
     const [category, setCategory] = useState("Clothing");
@@ -110,7 +111,7 @@ export default function TransactionModal({
                                 onPress={() => setCategory(item)}
                             >
                                 <Text style={[{ fontSize: 14, color: "#333" }, category === item && styles.categoryItemSelected]}>
-                                    {categoryIcons[item]} {item}
+                                    {categoryIcons[item]} {categoryLabels?.[item] || item}
                                 </Text>
                             </TouchableOpacity>
                         )}

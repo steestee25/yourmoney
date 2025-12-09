@@ -35,6 +35,28 @@
         "home":{
             "greeting": "Hello, {{name}}!"
         },
+        "categories": {
+            "Clothing": { "label": "Clothing", "icon": "👕", "color": "#4285F4" },
+            "Electronics": { "label": "Electronics", "icon": "📱", "color": "#34A853" },
+            "Car": { "label": "Car", "icon": "🚗", "color": "#FBBC04" },
+            "Groceries": { "label": "Groceries", "icon": "🛒", "color": "#EA4335" },
+            "Entertainment": { "label": "Entertainment", "icon": "🎬", "color": "#9333EA" },
+            "Food & Drink": { "label": "Food & Drink", "icon": "☕", "color": "#10B981" },
+            "Shopping": { "label": "Shopping", "icon": "📦", "color": "#FF6B35" },
+            "Health & Fitness": { "label": "Health & Fitness", "icon": "💪", "color": "#8B5CF6" },
+            "Medicines": { "label": "Medicines", "icon": "💊", "color": "#F44336" },
+            "Travel": { "label": "Travel", "icon": "✈️", "color": "#00B8D9" },
+            "Bills": { "label": "Bills", "icon": "🧾", "color": "#FFAB00" },
+            "Dentist": { "label": "Dentist", "icon": "🦷", "color": "#00C853" },
+            "Education": { "label": "Education", "icon": "🎓", "color": "#1976D2" },
+            "Pets": { "label": "Pets", "icon": "🐾", "color": "#FF8A65" },
+            "Gifts": { "label": "Gifts", "icon": "🎁", "color": "#C51162" },
+            "Medical Visits": { "label": "Medical Visits", "icon": "🏥", "color": "#009688" },
+            "Phone": { "label": "Phone", "icon": "📞", "color": "#607D8B" },
+            "Extras": { "label": "Extras", "icon": "🛍️", "color": "#7C4DFF" },
+            "Restaurant": { "label": "Restaurant", "icon": "🍽️", "color": "#FF7043" },
+            "Public Transport": { "label": "Public Transport", "icon": "🚌", "color": "#388E3C" }
+        },
         "about": {
             "logout": "Logout"
         },
@@ -77,7 +99,29 @@
             }
         },
         "home":{
-            "greeting": "Hello, {{name}}!"
+            "greeting": "Ciao, {{name}}!"
+        },
+        "categories": {
+            "Clothing": { "label": "Abbigliamento", "icon": "👕", "color": "#4285F4" },
+            "Electronics": { "label": "Elettronica", "icon": "📱", "color": "#34A853" },
+            "Car": { "label": "Auto", "icon": "🚗", "color": "#FBBC04" },
+            "Groceries": { "label": "Spesa", "icon": "🛒", "color": "#EA4335" },
+            "Entertainment": { "label": "Intrattenimento", "icon": "🎬", "color": "#9333EA" },
+            "Food & Drink": { "label": "Cibo e Bevande", "icon": "☕", "color": "#10B981" },
+            "Shopping": { "label": "Acquisti", "icon": "📦", "color": "#FF6B35" },
+            "Health & Fitness": { "label": "Salute e Fitness", "icon": "💪", "color": "#8B5CF6" },
+            "Medicines": { "label": "Medicinali", "icon": "💊", "color": "#F44336" },
+            "Travel": { "label": "Viaggi", "icon": "✈️", "color": "#00B8D9" },
+            "Bills": { "label": "Bollette", "icon": "🧾", "color": "#FFAB00" },
+            "Dentist": { "label": "Dentista", "icon": "🦷", "color": "#00C853" },
+            "Education": { "label": "Istruzione", "icon": "🎓", "color": "#1976D2" },
+            "Pets": { "label": "Animali", "icon": "🐾", "color": "#FF8A65" },
+            "Gifts": { "label": "Regali", "icon": "🎁", "color": "#C51162" },
+            "Medical Visits": { "label": "Visite Mediche", "icon": "🏥", "color": "#009688" },
+            "Phone": { "label": "Telefono", "icon": "📞", "color": "#607D8B" },
+            "Extras": { "label": "Extra", "icon": "🛍️", "color": "#7C4DFF" },
+            "Restaurant": { "label": "Ristorante", "icon": "🍽️", "color": "#FF7043" },
+            "Public Transport": { "label": "Trasporto Pubblico", "icon": "🚌", "color": "#388E3C" }
         },
         "about": {
             "logout": "Esci"
