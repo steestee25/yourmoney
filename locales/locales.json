@@ -57,6 +57,10 @@
             "Restaurant": { "label": "Restaurant", "icon": "🍽️", "color": "#FF7043" },
             "Public Transport": { "label": "Public Transport", "icon": "🚌", "color": "#388E3C" }
         },
+        "income": {
+            "Salary": { "label": "Salary", "icon": "💼", "color": "#16a34a" },
+            "Other": { "label": "Other", "icon": "💰", "color": "#10b981" }
+        },
         "about": {
             "logout": "Logout"
         },
@@ -122,6 +126,10 @@
             "Extras": { "label": "Extra", "icon": "🛍️", "color": "#7C4DFF" },
             "Restaurant": { "label": "Ristorante", "icon": "🍽️", "color": "#FF7043" },
             "Public Transport": { "label": "Trasporto Pubblico", "icon": "🚌", "color": "#388E3C" }
+        },
+        "income": {
+            "Salary": { "label": "Stipendio", "icon": "💼", "color": "#16a34a" },
+            "Other": { "label": "Altro", "icon": "💰", "color": "#10b981" }
         },
         "about": {
             "logout": "Esci"

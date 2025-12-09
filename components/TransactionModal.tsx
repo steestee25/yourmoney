@@ -13,6 +13,9 @@ export default function TransactionModal({
     categoryIcons,
     categoryColors,
     categoryLabels,
+    incomeCategoryIcons,
+    incomeCategoryColors,
+    incomeCategoryLabels,
 }) {
     const [name, setName] = useState("");
     const [category, setCategory] = useState("Clothing");
@@ -38,19 +41,37 @@ export default function TransactionModal({
         setShowDatePicker(false);
     }, [transaction, visible]);
 
+    // Quando cambia isIncome o cambiano le mappe delle categorie, assicuriamoci
+    // che la categoria selezionata esista nel set corrente; altrimenti selezioniamo il primo.
+    useEffect(() => {
+        const currentIcons = isIncome ? (incomeCategoryIcons || {}) : (categoryIcons || {});
+        const keys = Object.keys(currentIcons);
+        if (keys.length === 0) return;
+        if (!currentIcons[category]) {
+            setCategory(keys[0]);
+        }
+    }, [isIncome, categoryIcons, incomeCategoryIcons]);
+
+    const currentIcons = isIncome ? (incomeCategoryIcons || {}) : (categoryIcons || {});
+    const currentColors = isIncome ? (incomeCategoryColors || {}) : (categoryColors || {});
+    const currentLabels = isIncome ? (incomeCategoryLabels || {}) : (categoryLabels || {});
+
     const handleSave = () => {
         if (!name || !amount) return;
 
         const numAmount = parseFloat(amount);
         const signedAmount = isIncome ? numAmount : -numAmount; // Positivo se entrata, negativo se uscita
 
+        const currentIcons = isIncome ? (incomeCategoryIcons || {}) : (categoryIcons || {});
+        const currentColors = isIncome ? (incomeCategoryColors || {}) : (categoryColors || {});
+
         const prepared = {
             ...transaction,
             name,
             category,
             amount: signedAmount,
-            icon: categoryIcons[category],
-            color: categoryColors[category],
+            icon: currentIcons[category] || currentIcons[Object.keys(currentIcons)[0]] || '💰',
+            color: currentColors[category] || currentColors[Object.keys(currentColors)[0]] || '#999999',
             date,
         };
 
@@ -97,21 +118,21 @@ export default function TransactionModal({
                     <Text style={styles.label}>Category</Text>
                     <FlatList
                         style={{ marginBottom: 15 }}
-                        data={Object.keys(categoryIcons)}
+                        data={Object.keys(currentIcons)}
                         horizontal
                         renderItem={({ item }) => (
                             <TouchableOpacity
                                 style={[
                                     styles.categoryItem,
                                     category === item && {
-                                        backgroundColor: categoryColors[item] + 45,
-                                        borderColor: categoryColors[item] + 90,
+                                        backgroundColor: (currentColors[item] || '#999999') + 45,
+                                        borderColor: (currentColors[item] || '#999999') + 90,
                                     },
                                 ]}
                                 onPress={() => setCategory(item)}
                             >
                                 <Text style={[{ fontSize: 14, color: "#333" }, category === item && styles.categoryItemSelected]}>
-                                    {categoryIcons[item]} {categoryLabels?.[item] || item}
+                                    {currentIcons[item]} {currentLabels?.[item] || item}
                                 </Text>
                             </TouchableOpacity>
                         )}

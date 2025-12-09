@@ -45,6 +45,17 @@ export default function Index() {
   const categoryLabels: Record<string, string> = Object.fromEntries(
     Object.entries(categoriesFromLocale).map(([k, v]) => [k, v.label])
   );
+  // income categories (separate set)
+  const incomeFromLocale: Record<string, any> = (locales as any)[locale]?.income || {};
+  const incomeCategoryIcons: Record<string, string> = Object.fromEntries(
+    Object.entries(incomeFromLocale).map(([k, v]) => [k, v.icon])
+  );
+  const incomeCategoryColors: Record<string, string> = Object.fromEntries(
+    Object.entries(incomeFromLocale).map(([k, v]) => [k, v.color])
+  );
+  const incomeCategoryLabels: Record<string, string> = Object.fromEntries(
+    Object.entries(incomeFromLocale).map(([k, v]) => [k, v.label])
+  );
 
   useEffect(() => {
     if (!session?.user?.id) return;
@@ -337,6 +348,10 @@ export default function Index() {
           onSave={handleAddTransaction}
           categoryIcons={categoryIcons}
           categoryColors={categoryColors}
+          categoryLabels={categoryLabels}
+          incomeCategoryIcons={incomeCategoryIcons}
+          incomeCategoryColors={incomeCategoryColors}
+          incomeCategoryLabels={incomeCategoryLabels}
         />
       </View>
 
@@ -350,6 +365,10 @@ export default function Index() {
           onSave={handleEditTransaction}
           categoryIcons={categoryIcons}
           categoryColors={categoryColors}
+          categoryLabels={categoryLabels}
+          incomeCategoryIcons={incomeCategoryIcons}
+          incomeCategoryColors={incomeCategoryColors}
+          incomeCategoryLabels={incomeCategoryLabels}
         />
       </View>
 
