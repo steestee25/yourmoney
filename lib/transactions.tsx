@@ -184,3 +184,56 @@ export const groupTransactionsByDay = (
     }))
     .sort((a, b) => b.id - a.id);
 };
+
+/**
+ * Calcola le spese aggregate per mese degli ultimi 6 mesi
+ * Restituisce array ordinato da più vecchio a più recente
+ */
+export const fetchExpensesByMonth = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('amount, date')
+      .eq('user_id', userId)
+      .lt('amount', 0); // Solo expense (amount negativo)
+
+    if (error) {
+      console.error('Errore nel fetch spese per mese:', error.message);
+      return [];
+    }
+
+    // Calcola ultimi 6 mesi
+    const monthsData: Record<string, number> = {};
+    const today = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthsData[monthKey] = 0;
+    }
+
+    // Aggrega le spese per mese
+    (data || []).forEach((transaction) => {
+      const txDate = new Date(transaction.date);
+      const monthKey = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (monthsData.hasOwnProperty(monthKey)) {
+        monthsData[monthKey] += Math.abs(transaction.amount); // Converti a positivo
+      }
+    });
+
+    // Converti in array con label mese
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return Object.entries(monthsData).map(([monthKey, total]) => {
+      const [year, month] = monthKey.split('-');
+      const monthIndex = parseInt(month) - 1;
+      return {
+        value: Math.round(total),
+        label: monthLabels[monthIndex],
+      };
+    });
+  } catch (err) {
+    console.error('Errore inaspettato nel fetch spese per mese:', err);
+    return [];
+  }
+};

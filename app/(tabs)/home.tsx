@@ -9,7 +9,7 @@ import { styles } from "../../styles/home.styles";
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../lib/i18n';
 import { supabase } from '../../lib/supabase';
-import { createTransaction, fetchUserTransactions, groupTransactionsByDay } from '../../lib/transactions';
+import { createTransaction, fetchExpensesByMonth, fetchUserTransactions, groupTransactionsByDay } from '../../lib/transactions';
 import locales from '../../locales/locales.json';
 
 import { COLORS } from '../../constants/color';
@@ -27,6 +27,7 @@ export default function Index() {
 
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [expenseData, setExpenseData] = useState([]);
+  const [chartData, setChartData] = useState([]);
 
   const { session } = useAuth()
 
@@ -83,7 +84,7 @@ export default function Index() {
     fetchProfile();
   }, [session]);
 
-  // Fetch delle transazioni al mount
+  // Fetch transactions on mount and when session user ID changes
   useEffect(() => {
     if (!session?.user?.id) return;
 
@@ -93,6 +94,14 @@ export default function Index() {
         const transactions = await fetchUserTransactions(session.user.id);
         const grouped = groupTransactionsByDay(transactions, categoryIcons, categoryColors, incomeCategoryIcons, incomeCategoryColors);
         setExpenseData(grouped);
+
+        // Fetch spese per mese e aggiorna il grafico
+        const monthlyExpenses = await fetchExpensesByMonth(session.user.id);
+        const chartDataWithColors = monthlyExpenses.map((item, index) => ({
+          ...item,
+          frontColor: selectedIndex === index ? '#ffffff' : '#8fe8e7ff',
+        }));
+        setChartData(chartDataWithColors);
       } catch (err) {
         console.error('Errore nel fetch delle transazioni:', err);
       } finally {
@@ -103,23 +112,19 @@ export default function Index() {
     fetchTransactions();
   }, [session?.user?.id]);
 
-  // Stampa dati specifici dell'utente per debug (opzionale, puoi rimuovere)
+  // Print user info for debugging
   console.log('User ID:', session?.user?.id)
   console.log('Email:', session?.user?.email)
 
-  const data = [
-    { value: 50, label: 'Feb', frontColor: '#8fe8e7ff' },
-    { value: 90, label: 'Mar', frontColor: '#78ebe9ff' },
-    { value: 70, label: 'Apr', frontColor: '#8fe8e7ff' },
-    { value: 70, label: 'May', frontColor: '#78ebe9ff' },
-    { value: 100, label: 'Jun', frontColor: '#8fe8e7ff' },
-    { value: 85, label: 'Jul', frontColor: '#00ECEC' },
-  ].map((item, index) => ({
-    ...item,
-    frontColor: selectedIndex === index ? '#ffffff' : item.frontColor,
-  }));
-
-  
+  // Prepara dati del grafico con colori alternati
+  const data = chartData.length > 0 
+    ? chartData.map((item, index) => ({
+        ...item,
+        frontColor: selectedIndex === index ? '#ffffff' : (index % 2 === 0 ? '#8fe8e7ff' : '#78ebe9ff'),
+      }))
+    : [
+        { value: 0, label: 'No Data', frontColor: '#8fe8e7ff' },
+      ];
 
   // Always sort days descending after updates
   const sortDaysDescending = (days) =>
@@ -147,7 +152,7 @@ export default function Index() {
         return;
       }
 
-      // Aggiorna lo stato locale
+      // Update local state
       const dayTimestamp = new Date(newTransaction.date);
       dayTimestamp.setHours(0, 0, 0, 0);
       const dayId = dayTimestamp.getTime();
