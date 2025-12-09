@@ -67,6 +67,18 @@
         "celebration": {
             "congrats": "Congratulations!",
             "message": "You've completed the setup"
+        },
+        "transactionModal": {
+            "addTitle": "Add Transaction",
+            "editTitle": "Edit Transaction",
+            "namePlaceholder": "Transaction Name",
+            "expense": "Expense",
+            "income": "Income",
+            "category": "Category",
+            "amount": "Amount (€)",
+            "date": "Date",
+            "add": "Add",
+            "dateLocale": "en-GB"
         }
     },
     "it": {
@@ -133,6 +145,18 @@
         },
         "about": {
             "logout": "Esci"
+        },
+        "transactionModal": {
+            "addTitle": "Aggiungi transazione",
+            "editTitle": "Modifica transazione",
+            "namePlaceholder": "Nome transazione",
+            "expense": "Uscita",
+            "income": "Entrata",
+            "category": "Categoria",
+            "amount": "Importo (€)",
+            "date": "Data",
+            "add": "Aggiungi",
+            "dateLocale": "it-IT"
         },
         "celebration": {
             "congrats": "Complimenti!",

@@ -278,12 +278,16 @@ export default function Index() {
   const renderDaySection = ({ item: day }) => {
     const date = new Date(Number(day.id));
 
-    // Convert timestamp string → Date → formatted string
-    const formattedDate = date.toLocaleDateString('en-GB', {
+    // Convert timestamp string → Date → formatted string (localized)
+    const localeTag = locale === 'it' ? 'it-IT' : 'en-GB';
+    const formattedDate = date.toLocaleDateString(localeTag, {
       day: '2-digit',
       month: 'long',
       year: 'numeric',
     });
+    
+    // Capitalize first letter of month for better formatting
+    const capitalizedDate = formattedDate.replace(/(\s)([a-z])/g, (match, space, letter) => space + letter.toUpperCase());
 
     // Get today's date (without time)
     const today = new Date();
@@ -292,9 +296,11 @@ export default function Index() {
       date.getMonth() === today.getMonth() &&
       date.getFullYear() === today.getFullYear();
 
+    const todayLabel = locale === 'it' ? 'Oggi' : 'Today';
+
     return (
       <View style={styles.daySection}>
-        <Text style={styles.dayHeader}>{isToday ? 'Today' : formattedDate}</Text>
+        <Text style={styles.dayHeader}>{isToday ? todayLabel : capitalizedDate}</Text>
         {day.transactions.map((transaction) => (
           <View key={transaction.id}>
             {renderTransactionItem({ item: transaction, dayId: day.id })}

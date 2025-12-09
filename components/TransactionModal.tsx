@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FlatList, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 
+import { useTranslation } from "../lib/i18n";
 import styles from "../styles/components/transactionModal.styles";
 export default function TransactionModal({
     visible,
@@ -23,6 +24,8 @@ export default function TransactionModal({
     const [date, setDate] = useState(new Date());
     const [showDatePicker, setShowDatePicker] = useState(false);
     const [isIncome, setIsIncome] = useState(false); // true = entrata, false = uscita
+
+    const { t } = useTranslation();
 
     useEffect(() => {
         if (transaction) {
@@ -82,9 +85,9 @@ export default function TransactionModal({
         <Modal visible={visible} transparent animationType="slide" onRequestClose={onCancel}>
             <ScrollView style={styles.modalBackground} contentContainerStyle={{ flexGrow: 1, justifyContent: "center", alignItems: "center" }}>
                 <View style={styles.modalContainer}>
-                    <Text style={styles.title}>{mode === "add" ? "Add Transaction" : "Edit Transaction"}</Text>
+                    <Text style={styles.title}>{mode === "add" ? t('transactionModal.addTitle') : t('transactionModal.editTitle')}</Text>
 
-                    <TextInput style={styles.input} placeholder="Transaction Name" value={name} onChangeText={setName} />
+                    <TextInput style={styles.input} placeholder={t('transactionModal.namePlaceholder')} value={name} onChangeText={setName} />
 
                     <View style={{ flexDirection: 'row', marginBottom: 15, justifyContent: 'space-around' }}>
                         <TouchableOpacity
@@ -98,7 +101,7 @@ export default function TransactionModal({
                             }}
                             onPress={() => setIsIncome(false)}
                         >
-                            <Text style={{ color: !isIncome ? '#fff' : '#333', fontWeight: 'bold' }}>Expense</Text>
+                            <Text style={{ color: !isIncome ? '#fff' : '#333', fontWeight: 'bold' }}>{t('transactionModal.expense')}</Text>
                         </TouchableOpacity>
                         <TouchableOpacity
                             style={{
@@ -111,11 +114,11 @@ export default function TransactionModal({
                             }}
                             onPress={() => setIsIncome(true)}
                         >
-                            <Text style={{ color: isIncome ? '#fff' : '#333', fontWeight: 'bold' }}>Income</Text>
+                            <Text style={{ color: isIncome ? '#fff' : '#333', fontWeight: 'bold' }}>{t('transactionModal.income')}</Text>
                         </TouchableOpacity>
                     </View>
 
-                    <Text style={styles.label}>Category</Text>
+                    <Text style={styles.label}>{t('transactionModal.category')}</Text>
                     <FlatList
                         style={{ marginBottom: 15 }}
                         data={Object.keys(currentIcons)}
@@ -141,7 +144,7 @@ export default function TransactionModal({
                     />
 
                     <View style={styles.amountRow}>
-                        <Text style={styles.amountLabel}>Amount (€)</Text>
+                        <Text style={styles.amountLabel}>{t('transactionModal.amount')}</Text>
                         <TextInput
                             style={styles.amountInput}
                             placeholder="€"
@@ -153,9 +156,9 @@ export default function TransactionModal({
 
                     <View style={{ marginBottom: 15 }}>
                         <View style={styles.dateRow}>
-                            <Text style={styles.amountLabel}>Date</Text>
+                            <Text style={styles.amountLabel}>{t('transactionModal.date')}</Text>
                             <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
-                                <Text style={styles.dateButtonText}>{date.toLocaleDateString("en-GB")}</Text>
+                                <Text style={styles.dateButtonText}>{date.toLocaleDateString(t('transactionModal.dateLocale'))}</Text>
                             </TouchableOpacity>
                         </View>
 
@@ -183,11 +186,11 @@ export default function TransactionModal({
 
                     <View style={styles.actionRow}>
                         <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
-                            <Text style={styles.cancelButtonText}>Cancel</Text>
+                            <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-                            <Text style={styles.saveButtonText}>{mode === "add" ? "Add" : "Save"}</Text>
+                            <Text style={styles.saveButtonText}>{mode === "add" ? t('transactionModal.add') : t('common.save')}</Text>
                         </TouchableOpacity>
                     </View>
                 </View>
