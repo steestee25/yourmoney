@@ -8,6 +8,7 @@ import { styles } from "../../styles/home.styles";
 
 import { useAuth } from '../../contexts/AuthContext';
 import { supabase } from '../../lib/supabase';
+import { createTransaction, fetchUserTransactions, groupTransactionsByDay } from '../../lib/transactions';
 
 import { COLORS } from '../../constants/color';
 
@@ -21,6 +22,9 @@ export default function Index() {
   const [editModalVisible, setEditModalVisible] = useState(false);
   const [editingTransaction, setEditingTransaction] = useState(null);
   const [editingDayId, setEditingDayId] = useState(null);
+
+  const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
+  const [expenseData, setExpenseData] = useState([]);
 
   const { session } = useAuth()
 
@@ -52,15 +56,73 @@ export default function Index() {
     fetchProfile();
   }, [session]);
 
-  // Stampa tutti i dati della sessione
-  console.log('Session completa:', session)
+  // Fetch delle transazioni al mount
+  useEffect(() => {
+    if (!session?.user?.id) return;
 
-  // Stampa dati specifici dell'utente
+    const fetchTransactions = async () => {
+      setIsLoadingTransactions(true);
+      try {
+        const transactions = await fetchUserTransactions(session.user.id);
+        const categoryIcons = {
+          'Clothing': '👕',
+          'Electronics': '📱',
+          'Car': '🚗',
+          'Groceries': '🛒',
+          'Entertainment': '🎬',
+          'Food & Drink': '☕',
+          'Shopping': '📦',
+          'Health & Fitness': '💪',
+          'Medicines': '💊',
+          'Travel': '✈️',
+          'Bills': '🧾',
+          'Dentist': '🦷',
+          'Education': '🎓',
+          'Pets': '🐾',
+          'Gifts': '🎁',
+          'Medical Visits': '🏥',
+          'Phone': '📞',
+          'Extras': '🛍️',
+          'Restaurant': '🍽️',
+          'Public Transport': '🚌',
+        };
+        const categoryColors = {
+          'Clothing': '#4285F4',
+          'Electronics': '#34A853',
+          'Car': '#FBBC04',
+          'Groceries': '#EA4335',
+          'Entertainment': '#9333EA',
+          'Food & Drink': '#10B981',
+          'Shopping': '#FF6B35',
+          'Health & Fitness': '#8B5CF6',
+          'Medicines': '#F44336',
+          'Travel': '#00B8D9',
+          'Bills': '#FFAB00',
+          'Dentist': '#00C853',
+          'Education': '#1976D2',
+          'Pets': '#FF8A65',
+          'Gifts': '#C51162',
+          'Medical Visits': '#009688',
+          'Phone': '#607D8B',
+          'Extras': '#7C4DFF',
+          'Restaurant': '#FF7043',
+          'Public Transport': '#388E3C',
+        };
+        const grouped = groupTransactionsByDay(transactions, categoryIcons, categoryColors);
+        setExpenseData(grouped);
+      } catch (err) {
+        console.error('Errore nel fetch delle transazioni:', err);
+      } finally {
+        setIsLoadingTransactions(false);
+      }
+    };
+
+    fetchTransactions();
+  }, [session?.user?.id]);
+
+  // Stampa dati specifici dell'utente per debug (opzionale, puoi rimuovere)
   console.log('User ID:', session?.user?.id)
   console.log('Email:', session?.user?.email)
-  console.log('Dati metadata:', session?.user?.user_metadata)
-  console.log('Profile state:', profile)
-  console.log('Access token:', session?.access_token)
 
   const data = [
     { value: 50, label: 'Feb', frontColor: '#8fe8e7ff' },
@@ -125,30 +187,76 @@ export default function Index() {
     [...days].sort((a, b) => b.id - a.id);
 
   // ADD transaction
-  const handleAddTransaction = (newTransaction) => {
-    const dayTimestamp = new Date(newTransaction.date);
-    dayTimestamp.setHours(0, 0, 0, 0);
-    const dayId = dayTimestamp.getTime();
+  const handleAddTransaction = async (newTransaction) => {
+    if (!session?.user?.id) {
+      console.error('User ID not available');
+      return;
+    }
 
-    newTransaction.id = Date.now().toString();
+    try {
+      // Salva nel DB
+      const savedTransaction = await createTransaction(
+        session.user.id,
+        newTransaction.name,
+        newTransaction.category,
+        newTransaction.amount,
+        newTransaction.date
+      );
 
-    setExpenseData((prev) => {
-      const existingDayIndex = prev.findIndex((day) => day.id === dayId);
-      let updatedDays = [...prev];
-
-      if (existingDayIndex >= 0) {
-        updatedDays[existingDayIndex].transactions.unshift(newTransaction);
-      } else {
-        updatedDays.push({
-          id: dayId,
-          transactions: [newTransaction],
-        });
+      if (!savedTransaction) {
+        console.error('Errore nel salvataggio della transazione');
+        return;
       }
 
-      return sortDaysDescending(updatedDays);
-    });
+      // Aggiorna lo stato locale
+      const dayTimestamp = new Date(newTransaction.date);
+      dayTimestamp.setHours(0, 0, 0, 0);
+      const dayId = dayTimestamp.getTime();
 
-    setModalVisible(false);
+      const categoryIcons = {
+        'Clothing': '👕', 'Electronics': '📱', 'Car': '🚗', 'Groceries': '🛒',
+        'Entertainment': '🎬', 'Food & Drink': '☕', 'Shopping': '📦',
+        'Health & Fitness': '💪', 'Medicines': '💊', 'Travel': '✈️',
+        'Bills': '🧾', 'Dentist': '🦷', 'Education': '🎓', 'Pets': '🐾',
+        'Gifts': '🎁', 'Medical Visits': '🏥', 'Phone': '📞', 'Extras': '🛍️',
+        'Restaurant': '🍽️', 'Public Transport': '🚌',
+      };
+      const categoryColors = {
+        'Clothing': '#4285F4', 'Electronics': '#34A853', 'Car': '#FBBC04',
+        'Groceries': '#EA4335', 'Entertainment': '#9333EA', 'Food & Drink': '#10B981',
+        'Shopping': '#FF6B35', 'Health & Fitness': '#8B5CF6', 'Medicines': '#F44336',
+        'Travel': '#00B8D9', 'Bills': '#FFAB00', 'Dentist': '#00C853',
+        'Education': '#1976D2', 'Pets': '#FF8A65', 'Gifts': '#C51162',
+        'Medical Visits': '#009688', 'Phone': '#607D8B', 'Extras': '#7C4DFF',
+        'Restaurant': '#FF7043', 'Public Transport': '#388E3C',
+      };
+
+      const transactionWithUI = {
+        ...savedTransaction,
+        icon: categoryIcons[savedTransaction.category] || '💰',
+        color: categoryColors[savedTransaction.category] || '#999999',
+      };
+
+      setExpenseData((prev) => {
+        const existingDayIndex = prev.findIndex((day) => day.id === dayId);
+        let updatedDays = [...prev];
+
+        if (existingDayIndex >= 0) {
+          updatedDays[existingDayIndex].transactions.unshift(transactionWithUI);
+        } else {
+          updatedDays.push({
+            id: dayId,
+            transactions: [transactionWithUI],
+          });
+        }
+
+        return sortDaysDescending(updatedDays);
+      });
+
+      setModalVisible(false);
+    } catch (err) {
+      console.error('Errore in handleAddTransaction:', err);
+    }
   };
 
   // EDIT transaction
@@ -207,68 +315,6 @@ export default function Index() {
 
     setEditModalVisible(false);
   };
-
-  const [expenseData, setExpenseData] = useState([{
-    id: new Date('2025-09-22').setHours(0, 0, 0, 0),
-    transactions: [
-      {
-        id: 't1',
-        name: 'Nike Store',
-        category: 'Clothing',
-        amount: -734.00,
-        tax: 60.35,
-        icon: categoryIcons['Clothing'],
-        color: categoryColors['Clothing']
-      }
-    ]
-  },
-  {
-    id: new Date('2025-09-10').setHours(0, 0, 0, 0),
-    transactions: [
-      {
-        id: 't2',
-        name: 'Apple Store',
-        category: 'Electronics',
-        amount: -25.00,
-        tax: 4.50,
-        icon: categoryIcons['Electronics'],
-        color: categoryColors['Electronics']
-      },
-      {
-        id: 't3',
-        name: 'Uber',
-        category: 'Car',
-        amount: -4.99,
-        tax: 0.80,
-        icon: categoryIcons['Car'],
-        color: categoryColors['Car']
-      }
-    ]
-  },
-  {
-    id: new Date('2025-09-5').setHours(0, 0, 0, 0),
-    transactions: [
-      {
-        id: 't4',
-        name: 'Supermarket',
-        category: 'Groceries',
-        amount: -87.50,
-        tax: 7.25,
-        icon: categoryIcons['Groceries'],
-        color: categoryColors['Groceries']
-      },
-      {
-        id: 't5',
-        name: 'Netflix',
-        category: 'Entertainment',
-        amount: -15.99,
-        tax: 2.40,
-        icon: categoryIcons['Entertainment'],
-        color: categoryColors['Entertainment']
-      }
-    ]
-  },
-  ]);
 
   const handleBarPress = (item, index) => {
     if (selectedIndex === index) {

@@ -1,0 +1,175 @@
+import { supabase } from './supabase';
+
+// Tipo per una transazione dal DB
+export interface DBTransaction {
+  id: string;
+  user_id: string;
+  name: string;
+  category: string;
+  amount: number;
+  date: string;
+  created_at: string;
+  updated_at: string;
+}
+
+// Tipo per una transazione locale (con icon e color)
+export interface LocalTransaction extends DBTransaction {
+  icon: string;
+  color: string;
+}
+
+/**
+ * Fetch le ultime 30 transazioni dell'utente dal DB
+ * Ordinate per data decrescente (più recenti prima)
+ */
+export const fetchUserTransactions = async (userId: string): Promise<DBTransaction[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .limit(30);
+
+    if (error) {
+      console.error('Errore nel fetch transazioni:', error.message);
+      return [];
+    }
+
+    return data || [];
+  } catch (err) {
+    console.error('Errore inaspettato nel fetch transazioni:', err);
+    return [];
+  }
+};
+
+/**
+ * Inserisce una nuova transazione nel DB
+ */
+export const createTransaction = async (
+  userId: string,
+  name: string,
+  category: string,
+  amount: number,
+  date: Date
+): Promise<DBTransaction | null> => {
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .insert([
+        {
+          user_id: userId,
+          name,
+          category,
+          amount,
+          date: date.toISOString(),
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Errore nel create transazione:', error.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Errore inaspettato nel create transazione:', err);
+    return null;
+  }
+};
+
+/**
+ * Aggiorna una transazione nel DB
+ */
+export const updateTransaction = async (
+  transactionId: string,
+  updates: {
+    name?: string;
+    category?: string;
+    amount?: number;
+    date?: Date;
+  }
+): Promise<DBTransaction | null> => {
+  try {
+    const updateData: any = { ...updates };
+    if (updates.date) {
+      updateData.date = updates.date.toISOString();
+    }
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .update(updateData)
+      .eq('id', transactionId)
+      .select()
+      .single();
+
+    if (error) {
+      console.error('Errore nell\'update transazione:', error.message);
+      return null;
+    }
+
+    return data;
+  } catch (err) {
+    console.error('Errore inaspettato nell\'update transazione:', err);
+    return null;
+  }
+};
+
+/**
+ * Cancella una transazione dal DB
+ */
+export const deleteTransaction = async (transactionId: string): Promise<boolean> => {
+  try {
+    const { error } = await supabase
+      .from('transactions')
+      .delete()
+      .eq('id', transactionId);
+
+    if (error) {
+      console.error('Errore nella delete transazione:', error.message);
+      return false;
+    }
+
+    return true;
+  } catch (err) {
+    console.error('Errore inaspettato nella delete transazione:', err);
+    return false;
+  }
+};
+
+/**
+ * Raggruppa transazioni per giorno e aggiunge icon/color
+ */
+export const groupTransactionsByDay = (
+  transactions: DBTransaction[],
+  categoryIcons: Record<string, string>,
+  categoryColors: Record<string, string>
+) => {
+  const grouped: Record<number, LocalTransaction[]> = {};
+
+  transactions.forEach((transaction) => {
+    const date = new Date(transaction.date);
+    date.setHours(0, 0, 0, 0);
+    const dayId = date.getTime();
+
+    if (!grouped[dayId]) {
+      grouped[dayId] = [];
+    }
+
+    grouped[dayId].push({
+      ...transaction,
+      icon: categoryIcons[transaction.category] || '💰',
+      color: categoryColors[transaction.category] || '#999999',
+    });
+  });
+
+  // Converti in array e ordina per giorno decrescente
+  return Object.entries(grouped)
+    .map(([dayId, transactionsList]) => ({
+      id: Number(dayId),
+      transactions: transactionsList,
+    }))
+    .sort((a, b) => b.id - a.id);
+};
