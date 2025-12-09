@@ -91,7 +91,7 @@ export default function Index() {
       setIsLoadingTransactions(true);
       try {
         const transactions = await fetchUserTransactions(session.user.id);
-        const grouped = groupTransactionsByDay(transactions, categoryIcons, categoryColors);
+        const grouped = groupTransactionsByDay(transactions, categoryIcons, categoryColors, incomeCategoryIcons, incomeCategoryColors);
         setExpenseData(grouped);
       } catch (err) {
         console.error('Errore nel fetch delle transazioni:', err);
@@ -152,10 +152,15 @@ export default function Index() {
       dayTimestamp.setHours(0, 0, 0, 0);
       const dayId = dayTimestamp.getTime();
 
+      // Determine if this is income or expense based on amount sign
+      const isIncome = savedTransaction.amount > 0;
+      const currentIcons = isIncome ? incomeCategoryIcons : categoryIcons;
+      const currentColors = isIncome ? incomeCategoryColors : categoryColors;
+
       const transactionWithUI = {
         ...savedTransaction,
-        icon: categoryIcons[savedTransaction.category] || '💰',
-        color: categoryColors[savedTransaction.category] || '#999999',
+        icon: currentIcons[savedTransaction.category] || '💰',
+        color: currentColors[savedTransaction.category] || '#999999',
       };
 
       setExpenseData((prev) => {
@@ -265,11 +270,20 @@ export default function Index() {
           </View>
           <View>
             <Text style={styles.transactionName}>{transaction.name}</Text>
-            <Text style={styles.transactionCategory}>{categoryLabels[transaction.category] || transaction.category}</Text>
+            <Text style={styles.transactionCategory}>
+              {transaction.amount > 0 
+                ? incomeCategoryLabels[transaction.category] || transaction.category
+                : categoryLabels[transaction.category] || transaction.category}
+            </Text>
           </View>
         </View>
         <View style={styles.transactionRight}>
-          <Text style={styles.transactionAmount}>−€{Math.abs(transaction.amount).toFixed(2)}</Text>
+          <Text style={[
+            styles.transactionAmount,
+            transaction.amount > 0 && { color: '#22c55e' }
+          ]}>
+            {transaction.amount > 0 ? '+' : '−'}€{Math.abs(transaction.amount).toFixed(2)}
+          </Text>
         </View>
       </View>
     </TouchableOpacity>

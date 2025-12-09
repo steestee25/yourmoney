@@ -141,11 +141,14 @@ export const deleteTransaction = async (transactionId: string): Promise<boolean>
 
 /**
  * Raggruppa transazioni per giorno e aggiunge icon/color
+ * Distingue tra income (amount > 0) e expense (amount < 0)
  */
 export const groupTransactionsByDay = (
   transactions: DBTransaction[],
   categoryIcons: Record<string, string>,
-  categoryColors: Record<string, string>
+  categoryColors: Record<string, string>,
+  incomeCategoryIcons?: Record<string, string>,
+  incomeCategoryColors?: Record<string, string>
 ) => {
   const grouped: Record<number, LocalTransaction[]> = {};
 
@@ -158,10 +161,15 @@ export const groupTransactionsByDay = (
       grouped[dayId] = [];
     }
 
+    // Scegli le mappe corrette in base al segno dell'amount
+    const isIncome = transaction.amount > 0;
+    const icons = isIncome && incomeCategoryIcons ? incomeCategoryIcons : categoryIcons;
+    const colors = isIncome && incomeCategoryColors ? incomeCategoryColors : categoryColors;
+
     grouped[dayId].push({
       ...transaction,
-      icon: categoryIcons[transaction.category] || '💰',
-      color: categoryColors[transaction.category] || '#999999',
+      icon: icons[transaction.category] || '💰',
+      color: colors[transaction.category] || '#999999',
     });
   });
 
@@ -169,7 +177,10 @@ export const groupTransactionsByDay = (
   return Object.entries(grouped)
     .map(([dayId, transactionsList]) => ({
       id: Number(dayId),
-      transactions: transactionsList,
+      // Ordina transazioni dentro il giorno per created_at decrescente (più recenti prima)
+      transactions: transactionsList.sort((a, b) => 
+        new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+      ),
     }))
     .sort((a, b) => b.id - a.id);
 };
