@@ -9,7 +9,7 @@ import { styles } from "../../styles/home.styles";
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../lib/i18n';
 import { supabase } from '../../lib/supabase';
-import { createTransaction, fetchExpensesByMonth, fetchIncomeByMonth, fetchUserTransactions, groupTransactionsByDay } from '../../lib/transactions';
+import { createTransaction, fetchExpensesByMonth, fetchIncomeByMonth, fetchUserTransactions, groupTransactionsByDay, updateTransaction } from '../../lib/transactions';
 import locales from '../../locales/locales.json';
 
 import { COLORS } from '../../constants/color';
@@ -230,59 +230,88 @@ export default function Index() {
 
   // EDIT transaction
   const handleEditTransaction = async (updatedTransaction) => {
-    const dayTimestamp = new Date(updatedTransaction.date);
-    dayTimestamp.setHours(0, 0, 0, 0);
-    const newDayId = dayTimestamp.getTime();
+    if (!updatedTransaction?.id) return;
 
-    setExpenseData((prev) => {
-      let updatedDays = [...prev];
-
-      // Find old transaction
-      let oldDayIndex = -1;
-      let transactionIndex = -1;
-
-      updatedDays.forEach((day, dIndex) => {
-        const tIndex = day.transactions.findIndex(
-          (t) => t.id === updatedTransaction.id
-        );
-        if (tIndex !== -1) {
-          oldDayIndex = dIndex;
-          transactionIndex = tIndex;
-        }
+    // Persist changes to DB first
+    try {
+      const saved = await updateTransaction(updatedTransaction.id, {
+        name: updatedTransaction.name,
+        category: updatedTransaction.category,
+        amount: updatedTransaction.amount,
+        date: new Date(updatedTransaction.date),
       });
 
-      if (oldDayIndex === -1 || transactionIndex === -1) {
-        return prev; // Not found
+      if (!saved) {
+        console.error('Update DB failed');
+        return;
       }
 
-      // Same day → just replace
-      if (updatedDays[oldDayIndex].id === newDayId) {
-        updatedDays[oldDayIndex].transactions[transactionIndex] =
-          updatedTransaction;
-        return sortDaysDescending(updatedDays);
-      }
+      // Build UI representation with icon/color
+      const isIncome = saved.amount > 0;
+      const icons = isIncome ? incomeCategoryIcons : categoryIcons;
+      const colors = isIncome ? incomeCategoryColors : categoryColors;
+      const savedWithUI = {
+        ...saved,
+        icon: icons[saved.category] || '💰',
+        color: colors[saved.category] || '#999999',
+      };
 
-      // Date changed → remove from old day
-      updatedDays[oldDayIndex].transactions.splice(transactionIndex, 1);
-      if (updatedDays[oldDayIndex].transactions.length === 0) {
-        updatedDays.splice(oldDayIndex, 1);
-      }
+      const dayTimestamp = new Date(saved.date);
+      dayTimestamp.setHours(0, 0, 0, 0);
+      const newDayId = dayTimestamp.getTime();
 
-      // Add to new day
-      const newDayIndex = updatedDays.findIndex((d) => d.id === newDayId);
-      if (newDayIndex !== -1) {
-        updatedDays[newDayIndex].transactions.unshift(updatedTransaction);
-      } else {
-        updatedDays.push({
-          id: newDayId,
-          transactions: [updatedTransaction],
+      // Update local grouped state
+      setExpenseData((prev) => {
+        let updatedDays = [...prev];
+
+        // Find old transaction location
+        let oldDayIndex = -1;
+        let transactionIndex = -1;
+
+        updatedDays.forEach((day, dIndex) => {
+          const tIndex = day.transactions.findIndex((t) => t.id === savedWithUI.id);
+          if (tIndex !== -1) {
+            oldDayIndex = dIndex;
+            transactionIndex = tIndex;
+          }
         });
-      }
 
-      return sortDaysDescending(updatedDays);
-    });
-      // Update allTransactions with edited transaction
-      setAllTransactions((prev) => (prev || []).map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t)));
+        // If not found, just insert into correct day
+        if (oldDayIndex === -1 || transactionIndex === -1) {
+          const destDayIndex = updatedDays.findIndex((d) => d.id === newDayId);
+          if (destDayIndex !== -1) {
+            updatedDays[destDayIndex].transactions.unshift(savedWithUI);
+          } else {
+            updatedDays.push({ id: newDayId, transactions: [savedWithUI] });
+          }
+          return sortDaysDescending(updatedDays);
+        }
+
+        // Same day → replace
+        if (updatedDays[oldDayIndex].id === newDayId) {
+          updatedDays[oldDayIndex].transactions[transactionIndex] = savedWithUI;
+          return sortDaysDescending(updatedDays);
+        }
+
+        // Date changed → remove from old day
+        updatedDays[oldDayIndex].transactions.splice(transactionIndex, 1);
+        if (updatedDays[oldDayIndex].transactions.length === 0) {
+          updatedDays.splice(oldDayIndex, 1);
+        }
+
+        // Add to new day
+        const newDayIndex = updatedDays.findIndex((d) => d.id === newDayId);
+        if (newDayIndex !== -1) {
+          updatedDays[newDayIndex].transactions.unshift(savedWithUI);
+        } else {
+          updatedDays.push({ id: newDayId, transactions: [savedWithUI] });
+        }
+
+        return sortDaysDescending(updatedDays);
+      });
+
+      // Update allTransactions cache
+      setAllTransactions((prev) => (prev || []).map((t) => (t.id === savedWithUI.id ? savedWithUI : t)));
 
       // Reset selection and refresh chart
       setSelectedValue(null);
@@ -290,6 +319,9 @@ export default function Index() {
       await refreshChart(session.user.id);
 
       setEditModalVisible(false);
+    } catch (err) {
+      console.error('Errore nell\'update della transazione:', err);
+    }
   };
 
   const handleBarPress = (item, index) => {
