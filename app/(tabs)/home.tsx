@@ -1,4 +1,5 @@
 import { Ionicons } from "@expo/vector-icons";
+import * as Haptics from 'expo-haptics';
 import { useEffect, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
@@ -324,7 +325,8 @@ export default function Index() {
     }
   };
 
-  const handleBarPress = (item, index) => {
+  const handleBarPress = async (item, index) => {
+    try { await Haptics.selectionAsync(); } catch (e) {}
     if (selectedIndex === index) {
       // Se la stessa barra è cliccata, deseleziona
       setSelectedValue(null);
@@ -338,7 +340,8 @@ export default function Index() {
 
   const renderTransactionItem = ({ item: transaction, dayId }) => (
     <TouchableOpacity
-      onPress={() => {
+      onPress={async () => {
+        try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (e) {}
         setEditingTransaction({ ...transaction, date: transaction.date || Number(dayId) });
         setEditingDayId(dayId);
         setEditModalVisible(true);
@@ -423,7 +426,7 @@ export default function Index() {
       <View style={{ flexDirection: 'row', marginTop: '3%', marginHorizontal: 20, borderRadius: 35,
         backgroundColor: '#faf9f9ff', padding: 4 }}>
         <TouchableOpacity
-          onPress={() => { setFilterType('expenses'); setSelectedValue(null); setSelectedIndex(null); }}
+          onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setFilterType('expenses'); setSelectedValue(null); setSelectedIndex(null); }}
           style={{
             flex: 1,
             paddingVertical: 8,
@@ -440,7 +443,7 @@ export default function Index() {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => { setFilterType('income'); setSelectedValue(null); setSelectedIndex(null); }}
+          onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setFilterType('income'); setSelectedValue(null); setSelectedIndex(null); }}
           style={{
             flex: 1,
             paddingVertical: 8,
@@ -521,9 +524,9 @@ export default function Index() {
         </View>
         {/* FAB Add */}
         <TouchableOpacity
-          style={styles.fabButton}
-          onPress={() => setModalVisible(true)}
-        >
+              style={styles.fabButton}
+              onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch(e) {}; setModalVisible(true); }}
+            >
           <Text>
             <Ionicons name="add" size={32} color={COLORS.white} />
           </Text>

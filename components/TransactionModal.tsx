@@ -3,6 +3,7 @@ import React, { useEffect, useState } from "react";
 import { FlatList, Modal, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import DatePicker from "react-native-ui-datepicker";
 
+import * as Haptics from 'expo-haptics';
 import { useTranslation } from "../lib/i18n";
 import styles from "../styles/components/transactionModal.styles";
 export default function TransactionModal({
@@ -99,7 +100,7 @@ export default function TransactionModal({
                                 borderRadius: 8,
                                 alignItems: 'center',
                             }}
-                            onPress={() => setIsIncome(false)}
+                            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch(e) {}; setIsIncome(false); }}
                         >
                             <Text style={{ color: !isIncome ? '#fff' : '#333', fontWeight: 'bold' }}>{t('transactionModal.expense')}</Text>
                         </TouchableOpacity>
@@ -112,7 +113,7 @@ export default function TransactionModal({
                                 borderRadius: 8,
                                 alignItems: 'center',
                             }}
-                            onPress={() => setIsIncome(true)}
+                            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch(e) {}; setIsIncome(true); }}
                         >
                             <Text style={{ color: isIncome ? '#fff' : '#333', fontWeight: 'bold' }}>{t('transactionModal.income')}</Text>
                         </TouchableOpacity>
@@ -123,7 +124,7 @@ export default function TransactionModal({
                         style={{ marginBottom: 15 }}
                         data={Object.keys(currentIcons)}
                         horizontal
-                        renderItem={({ item }) => (
+                            renderItem={({ item }) => (
                             <TouchableOpacity
                                 style={[
                                     styles.categoryItem,
@@ -132,7 +133,7 @@ export default function TransactionModal({
                                         borderColor: (currentColors[item] || '#999999') + 90,
                                     },
                                 ]}
-                                onPress={() => setCategory(item)}
+                                onPress={async () => { try { await Haptics.selectionAsync(); } catch(e) {}; setCategory(item); }}
                             >
                                 <Text style={[{ fontSize: 14, color: "#333" }, category === item && styles.categoryItemSelected]}>
                                     {currentIcons[item]} {currentLabels?.[item] || item}
@@ -157,17 +158,18 @@ export default function TransactionModal({
                     <View style={{ marginBottom: 15 }}>
                         <View style={styles.dateRow}>
                             <Text style={styles.amountLabel}>{t('transactionModal.date')}</Text>
-                            <TouchableOpacity style={styles.dateButton} onPress={() => setShowDatePicker(true)}>
+                            <TouchableOpacity style={styles.dateButton} onPress={async () => { try { await Haptics.selectionAsync(); } catch(e) {}; setShowDatePicker(true); }}>
                                 <Text style={styles.dateButtonText}>{date.toLocaleDateString(t('transactionModal.dateLocale'))}</Text>
                             </TouchableOpacity>
                         </View>
 
                         {showDatePicker && (
-                            <DatePicker
+                                <DatePicker
                                 mode="single"
                                 date={date}
                                 firstDayOfWeek={1}
                                 onChange={({ date }) => {
+                                    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch(e) {}
                                     setDate(date);
                                     setShowDatePicker(false);
                                 }}
@@ -185,11 +187,11 @@ export default function TransactionModal({
                     </View>
 
                     <View style={styles.actionRow}>
-                        <TouchableOpacity style={styles.cancelButton} onPress={onCancel}>
+                        <TouchableOpacity style={styles.cancelButton} onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {}; onCancel(); }}>
                             <Text style={styles.cancelButtonText}>{t('common.cancel')}</Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
+                        <TouchableOpacity style={styles.saveButton} onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch(e) {}; handleSave(); }}>
                             <Text style={styles.saveButtonText}>{mode === "add" ? t('transactionModal.add') : t('common.save')}</Text>
                         </TouchableOpacity>
                     </View>
