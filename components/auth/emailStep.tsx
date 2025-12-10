@@ -21,7 +21,7 @@ interface Props {
 }
 
 export default function EmailStep({ email, setEmail, onNext, onBack }: Props) {
-  const { t } = useTranslation()
+  const { t, locale } = useTranslation()
   const [error, setError] = useState('')
   const [isFocused, setIsFocused] = useState(false)
 
@@ -73,9 +73,11 @@ export default function EmailStep({ email, setEmail, onNext, onBack }: Props) {
     outputRange: [110, -50], // move UP
   })
 
+  const titleOutputX = locale === 'en' ? -90 : -70
+
   const titleTranslateX = contentAnim.interpolate({
     inputRange: [0, 1],
-    outputRange: [0, -90], // move LEFT 
+    outputRange: [0, titleOutputX], // move LEFT (lang-specific)
   })
 
   const titleFontSize = contentAnim.interpolate({

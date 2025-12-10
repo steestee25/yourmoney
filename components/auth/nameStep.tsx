@@ -19,7 +19,7 @@ interface Props {
 }
 
 export default function NameStep({ name, setName, onNext }: Props) {
-    const { t } = useTranslation()
+    const { t, locale } = useTranslation()
     const [error, setError] = useState('')
     const [isFocused, setIsFocused] = useState(false)
 
@@ -64,9 +64,11 @@ export default function NameStep({ name, setName, onNext }: Props) {
         outputRange: [110, -50], // move UP
     })
 
+    const titleOutputX = locale === 'en' ? -80 : -100
+
     const titleTranslateX = contentAnim.interpolate({
         inputRange: [0, 1],
-        outputRange: [0, -80], // move LEFT 
+        outputRange: [0, titleOutputX], // move LEFT (lang-specific)
     })
 
     const titleFontSize = contentAnim.interpolate({
