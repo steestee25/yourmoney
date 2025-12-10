@@ -9,7 +9,7 @@ import { styles } from "../../styles/home.styles";
 import { useAuth } from '../../contexts/AuthContext';
 import { useTranslation } from '../../lib/i18n';
 import { supabase } from '../../lib/supabase';
-import { createTransaction, fetchExpensesByMonth, fetchUserTransactions, groupTransactionsByDay } from '../../lib/transactions';
+import { createTransaction, fetchExpensesByMonth, fetchIncomeByMonth, fetchUserTransactions, groupTransactionsByDay } from '../../lib/transactions';
 import locales from '../../locales/locales.json';
 
 import { COLORS } from '../../constants/color';
@@ -28,6 +28,8 @@ export default function Index() {
   const [isLoadingTransactions, setIsLoadingTransactions] = useState(false);
   const [expenseData, setExpenseData] = useState([]);
   const [chartData, setChartData] = useState([]);
+  const [filterType, setFilterType] = useState('expenses'); // 'expenses' | 'income'
+  const [allTransactions, setAllTransactions] = useState([]); // Store all transactions
 
   const { session } = useAuth()
 
@@ -92,12 +94,22 @@ export default function Index() {
       setIsLoadingTransactions(true);
       try {
         const transactions = await fetchUserTransactions(session.user.id);
-        const grouped = groupTransactionsByDay(transactions, categoryIcons, categoryColors, incomeCategoryIcons, incomeCategoryColors);
+        setAllTransactions(transactions);
+
+        // Filtra transazioni in base a filterType
+        const filteredTransactions = filterType === 'expenses'
+          ? transactions.filter(t => t.amount < 0)
+          : transactions.filter(t => t.amount > 0);
+
+        const grouped = groupTransactionsByDay(filteredTransactions, categoryIcons, categoryColors, incomeCategoryIcons, incomeCategoryColors);
         setExpenseData(grouped);
 
-        // Fetch spese per mese e aggiorna il grafico
-        const monthlyExpenses = await fetchExpensesByMonth(session.user.id);
-        const chartDataWithColors = monthlyExpenses.map((item, index) => ({
+        // Fetch dati del grafico in base a filterType
+        const chartData = filterType === 'expenses'
+          ? await fetchExpensesByMonth(session.user.id)
+          : await fetchIncomeByMonth(session.user.id);
+
+        const chartDataWithColors = chartData.map((item, index) => ({
           ...item,
           frontColor: selectedIndex === index ? '#ffffff' : '#8fe8e7ff',
         }));
@@ -110,13 +122,13 @@ export default function Index() {
     };
 
     fetchTransactions();
-  }, [session?.user?.id]);
+  }, [session?.user?.id, filterType]);
 
   // Print user info for debugging
   console.log('User ID:', session?.user?.id)
   console.log('Email:', session?.user?.email)
 
-  // Prepara dati del grafico con colori alternati
+  // Prepare chart data with alternating colors
   const data = chartData.length > 0 
     ? chartData.map((item, index) => ({
         ...item,
@@ -285,7 +297,7 @@ export default function Index() {
         <View style={styles.transactionRight}>
           <Text style={[
             styles.transactionAmount,
-            transaction.amount > 0 && { color: '#22c55e' }
+            transaction.amount > 0 && { color: COLORS.green}
           ]}>
             {transaction.amount > 0 ? '+' : '−'}€{Math.abs(transaction.amount).toFixed(2)}
           </Text>
@@ -342,12 +354,51 @@ export default function Index() {
         </View>
       </View>
 
+      {/* Expenses/Income selector */}
+      <View style={{ flexDirection: 'row', marginTop: '3%', marginHorizontal: 20, borderRadius: 35,
+        backgroundColor: '#faf9f9ff', padding: 4 }}>
+        <TouchableOpacity
+          onPress={() => setFilterType('expenses')}
+          style={{
+            flex: 1,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderRadius: 35,
+            backgroundColor: filterType === 'expenses' ? '#ffffff' : 'transparent',
+            borderWidth: filterType === 'expenses' ? 0.5 : 0,
+            borderColor: filterType === 'expenses' ? '#e0e0e0f1' : 'transparent',
+          }}
+        >
+          <Text style={{ textAlign: 'center', 
+            fontWeight: filterType === 'expenses' ? '600' : '400', color: COLORS.red }}>
+            Expenses
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={() => setFilterType('income')}
+          style={{
+            flex: 1,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderRadius: 35,
+            backgroundColor: filterType === 'income' ? '#ffffff' : 'transparent',
+            borderWidth: filterType === 'income' ? 0.5 : 0,
+            borderColor: filterType === 'income' ? '#e0e0e0f1' : 'transparent',
+          }}
+        >
+          <Text style={{ textAlign: 'center',
+            fontWeight: filterType === 'income' ? '600' : '400', color: COLORS.green }}>
+            Income
+          </Text>
+        </TouchableOpacity>
+      </View>
+
       <View style={styles.recapContainer}>
         <View style={styles.recapCard}>
           <View style={styles.recapCardExpensesContainer}>
             {(
               <Text style={styles.selectedValueText}>
-                {selectedValue ? `Expenses: ${selectedValue}€` : 'Expenses'}
+                {selectedValue ? `${filterType === 'expenses' ? 'Expenses' : 'Income'}: ${selectedValue}€` : (filterType === 'expenses' ? 'Expenses' : 'Income')}
               </Text>)}
           </View>
           <BarChart data={data} barBorderRadius={4} yAxisThickness={0} xAxisThickness={0} hideRules={true}

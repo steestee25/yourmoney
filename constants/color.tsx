@@ -1,3 +1,4 @@
+
 export const COLORS = {
   white: '#ffffff',
   black: '#000000',
@@ -8,4 +9,6 @@ export const COLORS = {
   temp: '#666',
   //temp2: '#d6fffb',
   temp2: '#c1fff9ff',
+  red: '#ff4d4d94',
+  green: '#17db5f92',
 }

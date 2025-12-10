@@ -237,3 +237,56 @@ export const fetchExpensesByMonth = async (userId: string) => {
     return [];
   }
 };
+
+/**
+ * Calcola gli income aggregati per mese degli ultimi 6 mesi
+ * Restituisce array ordinato da più vecchio a più recente
+ */
+export const fetchIncomeByMonth = async (userId: string) => {
+  try {
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('amount, date')
+      .eq('user_id', userId)
+      .gt('amount', 0); // Solo income (amount positivo)
+
+    if (error) {
+      console.error('Errore nel fetch income per mese:', error.message);
+      return [];
+    }
+
+    // Calcola ultimi 6 mesi
+    const monthsData: Record<string, number> = {};
+    const today = new Date();
+    
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+      const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthsData[monthKey] = 0;
+    }
+
+    // Aggrega gli income per mese
+    (data || []).forEach((transaction) => {
+      const txDate = new Date(transaction.date);
+      const monthKey = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+      
+      if (monthsData.hasOwnProperty(monthKey)) {
+        monthsData[monthKey] += transaction.amount; // Già positivo
+      }
+    });
+
+    // Converti in array con label mese
+    const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    return Object.entries(monthsData).map(([monthKey, total]) => {
+      const [year, month] = monthKey.split('-');
+      const monthIndex = parseInt(month) - 1;
+      return {
+        value: Math.round(total),
+        label: monthLabels[monthIndex],
+      };
+    });
+  } catch (err) {
+    console.error('Errore inaspettato nel fetch income per mese:', err);
+    return [];
+  }
+};

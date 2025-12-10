@@ -27,8 +27,8 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.borderWhite,
   },
   recapContainer: {
-    flex: 0.4,
-    marginTop: '10%',
+    flex: 0.5,
+    marginTop: '3%',
     marginLeft: '5%',
     marginRight: '5%',
   },
