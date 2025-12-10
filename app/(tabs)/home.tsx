@@ -35,7 +35,7 @@ export default function Index() {
 
   const [profile, setProfile] = useState<any>(null);
 
-  const { locale } = useTranslation();
+  const { locale, t } = useTranslation();
 
   // categories loaded from locales.json (icon, color, label)
   const categoriesFromLocale: Record<string, any> = (locales as any)[locale]?.categories || {};
@@ -92,6 +92,9 @@ export default function Index() {
 
     const fetchTransactions = async () => {
       setIsLoadingTransactions(true);
+      // Reset any selected chart month when reloading due to filter change
+      setSelectedValue(null);
+      setSelectedIndex(null);
       try {
         const transactions = await fetchUserTransactions(session.user.id);
         setAllTransactions(transactions);
@@ -123,6 +126,24 @@ export default function Index() {
 
     fetchTransactions();
   }, [session?.user?.id, filterType]);
+
+  // Refresh chart helper (fetches monthly aggregates based on current filter)
+  const refreshChart = async (userId) => {
+    if (!userId) return;
+    try {
+      const chart = filterType === 'expenses'
+        ? await fetchExpensesByMonth(userId)
+        : await fetchIncomeByMonth(userId);
+
+      const chartDataWithColors = chart.map((item, index) => ({
+        ...item,
+        frontColor: selectedIndex === index ? '#ffffff' : (index % 2 === 0 ? '#8fe8e7ff' : '#78ebe9ff'),
+      }));
+      setChartData(chartDataWithColors);
+    } catch (err) {
+      console.error('Errore aggiornamento grafico:', err);
+    }
+  };
 
   // Print user info for debugging
   console.log('User ID:', session?.user?.id)
@@ -197,13 +218,18 @@ export default function Index() {
       });
 
       setModalVisible(false);
+      // Update allTransactions and refresh chart
+      setAllTransactions((prev) => [savedTransaction, ...(prev || [])]);
+      setSelectedValue(null);
+      setSelectedIndex(null);
+      await refreshChart(session.user.id);
     } catch (err) {
       console.error('Errore in handleAddTransaction:', err);
     }
   };
 
   // EDIT transaction
-  const handleEditTransaction = (updatedTransaction) => {
+  const handleEditTransaction = async (updatedTransaction) => {
     const dayTimestamp = new Date(updatedTransaction.date);
     dayTimestamp.setHours(0, 0, 0, 0);
     const newDayId = dayTimestamp.getTime();
@@ -255,8 +281,15 @@ export default function Index() {
 
       return sortDaysDescending(updatedDays);
     });
+      // Update allTransactions with edited transaction
+      setAllTransactions((prev) => (prev || []).map((t) => (t.id === updatedTransaction.id ? updatedTransaction : t)));
 
-    setEditModalVisible(false);
+      // Reset selection and refresh chart
+      setSelectedValue(null);
+      setSelectedIndex(null);
+      await refreshChart(session.user.id);
+
+      setEditModalVisible(false);
   };
 
   const handleBarPress = (item, index) => {
@@ -358,7 +391,7 @@ export default function Index() {
       <View style={{ flexDirection: 'row', marginTop: '3%', marginHorizontal: 20, borderRadius: 35,
         backgroundColor: '#faf9f9ff', padding: 4 }}>
         <TouchableOpacity
-          onPress={() => setFilterType('expenses')}
+          onPress={() => { setFilterType('expenses'); setSelectedValue(null); setSelectedIndex(null); }}
           style={{
             flex: 1,
             paddingVertical: 8,
@@ -371,11 +404,11 @@ export default function Index() {
         >
           <Text style={{ textAlign: 'center', 
             fontWeight: filterType === 'expenses' ? '600' : '400', color: COLORS.red }}>
-            Expenses
+            {t ? t('transactionModal.expense') : 'Expenses'}
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setFilterType('income')}
+          onPress={() => { setFilterType('income'); setSelectedValue(null); setSelectedIndex(null); }}
           style={{
             flex: 1,
             paddingVertical: 8,
@@ -388,7 +421,7 @@ export default function Index() {
         >
           <Text style={{ textAlign: 'center',
             fontWeight: filterType === 'income' ? '600' : '400', color: COLORS.green }}>
-            Income
+            {t ? t('transactionModal.income') : 'Income'}
           </Text>
         </TouchableOpacity>
       </View>
@@ -398,7 +431,7 @@ export default function Index() {
           <View style={styles.recapCardExpensesContainer}>
             {(
               <Text style={styles.selectedValueText}>
-                {selectedValue ? `${filterType === 'expenses' ? 'Expenses' : 'Income'}: ${selectedValue}€` : (filterType === 'expenses' ? 'Expenses' : 'Income')}
+                {selectedValue ? `${filterType === 'expenses' ? (t ? t('transactionModal.expense') : 'Expenses') : (t ? t('transactionModal.income') : 'Income')}: ${selectedValue}€` : (filterType === 'expenses' ? (t ? t('transactionModal.expense') : 'Expenses') : (t ? t('transactionModal.income') : 'Income'))}
               </Text>)}
           </View>
           <BarChart data={data} barBorderRadius={4} yAxisThickness={0} xAxisThickness={0} hideRules={true}
