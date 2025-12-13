@@ -6,6 +6,7 @@ export const COLORS = {
   primary: '#00ecec',
   primaryLight: '#00ecec8d',
   primaryLightOpacity: '#d6fffb',
+  primaryLightOpacityFill: '#5cdfd2ff',
   temp: '#666',
   //temp2: '#d6fffb',
   temp2: '#c1fff9ff',
