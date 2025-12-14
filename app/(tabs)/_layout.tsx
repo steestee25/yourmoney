@@ -1,8 +1,10 @@
-import { Entypo } from '@expo/vector-icons';
+import { Entypo, FontAwesome6, MaterialCommunityIcons } from '@expo/vector-icons';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import Octicons from '@expo/vector-icons/Octicons';
 import { Tabs, useRouter } from 'expo-router';
-import { TouchableOpacity, View } from "react-native";
+import React from 'react';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+import { COLORS } from '../../constants/color';
 
 export default function TabLayout() {
     const router = useRouter();
@@ -13,12 +15,16 @@ export default function TabLayout() {
         router.setParams({ resetMessages: Date.now().toString() });
     };
 
+    const HeaderButton = ({ onPress, children, style }: any) => (
+        <TouchableOpacity onPress={onPress} style={[styles.headerButton, style]}>{children}</TouchableOpacity>
+    );
+
     return (
         <Tabs
             screenOptions={{
                 tabBarActiveTintColor: '#9CF1F0',
                 headerStyle: {
-                    backgroundColor: '#fff',
+                    backgroundColor: COLORS.white,
                 },
                 headerShadowVisible: false,
                 headerTintColor: '#007bff',
@@ -27,11 +33,11 @@ export default function TabLayout() {
                     marginHorizontal: 10,
                     bottom: 20,
                     borderRadius: 30,
-                    backgroundColor: '#fff',
+                    backgroundColor: COLORS.white,
                     shadowColor: '#000',
                 },
                 tabBarIconStyle: {
-                    marginTop: 12.5, 
+                    marginTop: 12.5,
                 },
 
             }}
@@ -51,28 +57,24 @@ export default function TabLayout() {
                     tabBarIcon: ({ color, focused }) => (
                         <Ionicons name={focused ? 'chatbubble' : 'chatbubble-outline'} color={color} size={26} />
                     ),
-                    headerStyle: { backgroundColor: '#fff' },
-                    headerTintColor: '#000000',
-                    headerTitleStyle: {
-                        fontWeight: 'bold',
-                        fontSize: 28,
-                    },
+                    headerStyle: { backgroundColor: COLORS.white },
                     headerShown: true,
-                    headerTitle: "SaveBuddy",
                     headerLeft: () => (
-                        <Ionicons
-                            name="menu"
-                            size={28}
-                            color="#000"
-                            style={{ marginLeft: 15, marginTop: 4 }}
-                        />
+                        <View style={{ marginLeft: 12 }}>
+                            <HeaderButton onPress={() => { /* open menu */ }}>
+                                <FontAwesome6 name="bars-staggered" size={20} color={COLORS.temp3} />
+                            </HeaderButton>
+                        </View>
                     ),
                     headerRight: () => (
-                        <View style={{ flexDirection: 'row', gap: 12 }}>
-                            <TouchableOpacity onPress={handleNewMessage}>
-                                <Entypo name="new-message" size={26} color="#6cebe9ff" />
-                            </TouchableOpacity>
-                            <Entypo name="dots-three-vertical" size={26} color="#6cebe9ff" style={{ marginRight: 15 }} />
+                        <View style={styles.headerRightContainer}>
+                            <HeaderButton onPress={handleNewMessage}>
+                                <MaterialCommunityIcons name="shape-square-rounded-plus" 
+                                size={28} color={COLORS.temp3} />
+                            </HeaderButton>
+                            <HeaderButton style={{ marginLeft: 12 }} onPress={() => { /* more */ }}>
+                                <Entypo name="dots-three-vertical" size={20} color={COLORS.temp3} />
+                            </HeaderButton>
                         </View>
                     ),
                     tabBarStyle: { display: 'none' },
@@ -101,3 +103,24 @@ export default function TabLayout() {
         </Tabs>
     )
 }
+
+const styles = StyleSheet.create({
+    headerButton: {
+        width: 44,
+        height: 44,
+        borderRadius: 22,
+        backgroundColor: COLORS.white,
+        alignItems: 'center',
+        justifyContent: 'center',
+        shadowColor: COLORS.temp,
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.25,
+        shadowRadius: 4,
+        elevation: 4,
+    },
+    headerRightContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        marginRight: 12,
+    },
+});

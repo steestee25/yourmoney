@@ -1,4 +1,5 @@
 
+import { COLORS } from '@/constants/color';
 import { Feather } from '@expo/vector-icons';
 import { GoogleGenAI } from "@google/genai";
 import { useFocusEffect } from '@react-navigation/native';
@@ -227,7 +228,7 @@ export default function Chat() {
 const styles = StyleSheet.create({
   keyboardContainer: {
     flex: 1,
-    backgroundColor: 'transparent',
+    backgroundColor: COLORS.white,
   },
   container: {
     flex: 1,
