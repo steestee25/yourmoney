@@ -1,3 +1,4 @@
+import * as Haptics from 'expo-haptics';
 import React, { useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { COLORS } from '../../constants/color';
@@ -13,9 +14,9 @@ const Avatar = ({ uri }: { uri?: string }) => (
   </View>
 )
 
-function RowItem({ icon, label }: { icon?: React.ReactNode; label: string }) {
+function RowItem({ icon, label, onPress }: { icon?: React.ReactNode; label: string; onPress?: () => void }) {
   return (
-    <Pressable style={styles.row} android_ripple={{ color: '#eee' }}>
+    <Pressable onPress={onPress} style={styles.row} android_ripple={{ color: '#eee' }}>
       <View style={styles.rowLeft}>
         <View style={styles.iconPlaceholder} />
         <Text style={styles.rowLabel}>{label}</Text>
@@ -58,6 +59,18 @@ export default function AboutScreen() {
   const displayEmail = session?.user?.email || ''
   const avatarUri = session?.user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=8b5cf6&color=fff`
 
+  const handleLogout = async () => {
+    try {
+      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
+      const { error } = await supabase.auth.signOut()
+      if (error) {
+        console.log('Logout error:', error.message || error)
+      }
+    } catch (err) {
+      console.log('Unexpected logout error:', err)
+    }
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -88,9 +101,19 @@ export default function AboutScreen() {
         <RowItem label="About" />
       </View>
       
-      <View style={styles.redCard}>
-        <RowItem label="Logout" />
-      </View>
+      <Pressable
+        onPress={handleLogout}
+        style={styles.redCard}
+        android_ripple={{ color: 'rgba(255,255,255,0.18)' }}
+      >
+        <View style={styles.row}>
+          <View style={styles.rowLeft}>
+            <View style={styles.iconPlaceholder} />
+            <Text style={[styles.rowLabel, { color: '#fff' }]}>Logout</Text>
+          </View>
+          <Text style={[styles.chev, { color: '#fff' }]}>›</Text>
+        </View>
+      </Pressable>
 
       </ScrollView>
     </View>
