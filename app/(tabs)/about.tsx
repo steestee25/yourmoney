@@ -1,9 +1,10 @@
-import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
+import { Entypo, Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useState } from 'react';
-import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, View } from 'react-native';
 import { COLORS } from '../../constants/color';
 import { useAuth } from '../../contexts/AuthContext';
+import { useTranslation } from '../../lib/i18n';
 import { supabase } from '../../lib/supabase';
 
 const Avatar = ({ uri }: { uri?: string }) => (
@@ -15,21 +16,37 @@ const Avatar = ({ uri }: { uri?: string }) => (
   </View>
 )
 
-function RowItem({ icon, label, onPress }: { icon?: React.ReactNode; label: string; onPress?: () => void }) {
+function RowItem({ icon, label, onPress, right }: { icon?: React.ReactNode; label: string; onPress?: () => void; right?: React.ReactNode }) {
+  const Left = (
+    <View style={styles.rowLeft}>
+      <View style={styles.iconPlaceholder}>{icon ?? null}</View>
+      <Text style={styles.rowLabel}>{label}</Text>
+    </View>
+  )
+
+  if (onPress) {
+    return (
+      <Pressable onPress={onPress} style={styles.row} android_ripple={{ color: '#eee' }}>
+        {Left}
+        {right ?? <Text style={styles.chev}>›</Text>}
+      </Pressable>
+    )
+  }
+
   return (
-    <Pressable onPress={onPress} style={styles.row} android_ripple={{ color: '#eee' }}>
-      <View style={styles.rowLeft}>
-        <View style={styles.iconPlaceholder}>{icon ?? null}</View>
-        <Text style={styles.rowLabel}>{label}</Text>
-      </View>
-      <Text style={styles.chev}>›</Text>
-    </Pressable>
+    <View style={styles.row}>
+      {Left}
+      {right ?? <Text style={styles.chev}>›</Text>}
+    </View>
   )
 }
 
 export default function AboutScreen() {
   const { session } = useAuth()
   const [profile, setProfile] = useState<any>(null)
+    const [settingsVisible, setSettingsVisible] = useState(false)
+    const { locale, setLocale, t } = useTranslation()
+    const [isItalian, setIsItalian] = useState(locale === 'it')
 
   useEffect(() => {
     if (!session?.user?.id) return
@@ -84,41 +101,80 @@ export default function AboutScreen() {
           </View>
         </View>
         <Pressable style={styles.editBtn}>
-          <Text style={styles.editText}>Edit</Text>
+          <Text style={styles.editText}>{t ? t('about.edit') : 'Edit'}</Text>
         </Pressable>
       </View>
 
-      <Text style={styles.sectionTitle}>Account Settings</Text>
+      <Text style={styles.sectionTitle}>{t ? t('about.accountSettings') : 'Account Settings'}</Text>
       <View style={styles.whiteCard}>
         <RowItem
           icon={<MaterialCommunityIcons name="account" size={24} color={COLORS.temp} />}
-          label="Account Information"
+          label={t ? t('about.accountInformation') : 'Account Information'}
         />
         <RowItem
           icon={<MaterialCommunityIcons name="form-textbox-password" size={24} color={COLORS.temp} />}
-          label="Change Password"
+          label={t ? t('about.changePassword') : 'Change Password'}
         />
         <RowItem
           icon={<MaterialCommunityIcons name="devices" size={24} color={COLORS.temp} />}
-          label="Device"
+          label={t ? t('about.device') : 'Device'}
         />
       </View>
 
-      <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Settings</Text>
+      <Text style={[styles.sectionTitle, { marginTop: 20 }]}>{t ? t('settings.title') : 'Settings'}</Text>
       <View style={styles.whiteCard}>
         <RowItem
           icon={<Feather name="settings" size={22} color="black" />}
-          label="Settings"
+          label={t ? t('settings.title') : 'Settings'}
+          onPress={() => setSettingsVisible(true)}
         />
         <RowItem
           icon={<MaterialCommunityIcons name="assistant" size={22} color={COLORS.temp} />}
-          label="Help & Support"
+          label={t ? t('about.helpSupport') : 'Help & Support'}
         />
         <RowItem
           icon={<MaterialCommunityIcons name="information-slab-symbol" size={36} color={COLORS.temp} />}
-          label="About"
+          label={t ? t('about.aboutLabel') : 'About'}
         />
       </View>
+      
+      <Modal
+        visible={settingsVisible}
+        animationType="slide"
+        transparent
+        onRequestClose={() => setSettingsVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <Pressable style={styles.overlayFill} onPress={() => setSettingsVisible(false)} />
+          <View style={styles.bottomSheet}>
+            <Text style={styles.sheetTitle}>{t ? t('settings.title') : 'Settings'}</Text>
+            <RowItem
+              icon={<Entypo name="language" size={24} color="black" />}
+              label={t ? t('settings.language') : 'Language'}
+              right={(
+                  <View style={styles.langRight}>
+                    <Text style={styles.langText}>{isItalian ? 'Italiano' : 'English'}</Text>
+                    <Switch
+                      value={isItalian}
+                      onValueChange={async (val) => {
+                        console.log('Language switch toggled ->', val)
+                        setIsItalian(val)
+                        const newLocale = val ? 'it' : 'en'
+                        try {
+                          await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium)
+                        } catch (e) {
+                          // ignore
+                        }
+                        setLocale(newLocale as any)
+                      }}
+                    />
+                  </View>
+              )}
+            />
+              <Text style={styles.langHint}>{t ? t('settings.languageHint') : 'Switch app language between Italiano and English'}</Text>
+          </View>
+        </View>
+      </Modal>
       
       <Pressable
         onPress={handleLogout}
@@ -130,7 +186,7 @@ export default function AboutScreen() {
             <View style={styles.iconPlaceholder}>
               <MaterialCommunityIcons name="logout" size={22} color={COLORS.white} />
             </View>
-            <Text style={[styles.rowLabel, { color: '#fff' }]}>Logout</Text>
+            <Text style={[styles.rowLabel, { color: '#fff' }]}>{t ? t('about.logout') : 'Logout'}</Text>
           </View>
           <Text style={[styles.chev, { color: '#fff' }]}>›</Text>
         </View>
@@ -209,4 +265,26 @@ const styles = StyleSheet.create({
   },
   rowLabel: { fontSize: 15, color: COLORS.temp, fontWeight: '500' },
   chev: { color: '#bdb3c8', fontSize: 20},
+  modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' },
+  overlayFill: { flex: 1 },
+  bottomSheet: {
+    backgroundColor: COLORS.white,
+    borderTopLeftRadius: 30,
+    borderTopRightRadius: 30,
+    paddingHorizontal: 16,
+    paddingTop: 12,
+    paddingBottom: 30,
+    elevation: 6,
+  },
+  statusBarOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: 'rgba(0,0,0,0.4)'
+  },
+  sheetTitle: { fontSize: 16, fontWeight: '700', color: '#111', marginTop: '2%', marginBottom: 8 },
+  langRight: { flexDirection: 'row', alignItems: 'center' },
+  langText: { marginRight: 8, color: '#333', fontWeight: '600' },
+  langHint: { color: '#6b6b6b', fontSize: 12, marginTop: 10 },
 })

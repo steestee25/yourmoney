@@ -33,7 +33,12 @@
             }
         },
         "home":{
-            "greeting": "Hello, {{name}}!"
+            "greeting": "Hello, {name}!"
+        },
+        "settings": {
+            "title": "Settings",
+            "language": "Language",
+            "languageHint": "Switch app language between Italian and English"
         },
         "categories": {
             "Clothing": { "label": "Clothing", "icon": "👕", "color": "#4285F4" },
@@ -62,7 +67,14 @@
             "Other": { "label": "Other", "icon": "💰", "color": "#10b981" }
         },
         "about": {
-            "logout": "Logout"
+            "logout": "Logout",
+            "edit": "Edit",
+            "accountSettings": "Account Settings",
+            "accountInformation": "Account Information",
+            "changePassword": "Change Password",
+            "device": "Device",
+            "helpSupport": "Help & Support",
+            "aboutLabel": "About"
         },
         "celebration": {
             "congrats": "Congratulations!",
@@ -115,7 +127,12 @@
             }
         },
         "home":{
-            "greeting": "Ciao, {{name}}!"
+            "greeting": "Ciao, {name}!"
+        },
+        "settings": {
+            "title": "Impostazioni",
+            "language": "Lingua",
+            "languageHint": "Cambia la lingua dell'app tra Italiano e Inglese"
         },
         "categories": {
             "Clothing": { "label": "Abbigliamento", "icon": "👕", "color": "#4285F4" },
@@ -144,7 +161,14 @@
             "Other": { "label": "Altro", "icon": "💰", "color": "#10b981" }
         },
         "about": {
-            "logout": "Esci"
+            "logout": "Esci",
+            "edit": "Modifica",
+            "accountSettings": "Impostazioni account",
+            "accountInformation": "Informazioni account",
+            "changePassword": "Cambia password",
+            "device": "Dispositivo",
+            "helpSupport": "Guida e Supporto",
+            "aboutLabel": "Informazioni"
         },
         "transactionModal": {
             "addTitle": "Aggiungi transazione",
