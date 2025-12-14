@@ -413,18 +413,9 @@ export default function Index() {
     <View style={styles.container}>
 
       <View style={styles.containerHeader}>
-        {(() => {
-          const displayName = profile?.full_name || session?.user?.user_metadata?.full_name || session?.user?.email?.split('@')[0] || 'User'
-          const template = t ? t('home.greeting') : `Hello, {name}!`
-          const parts = template.split('{name}')
-          return (
-            <Text style={styles.textHelloMessage}>
-              {parts[0]}
-              <Text style={{ fontWeight: 'bold' }}>{displayName}</Text>
-              {parts[1] ?? ''}
-            </Text>
-          )
-        })()}
+        <Text style={styles.textHelloMessage}>
+          Hello, <Text style={{ fontWeight: "bold" }}>{profile?.full_name || session?.user?.user_metadata?.full_name}</Text>
+        </Text>
 
         <View style={styles.iconSearch}>
           <Ionicons name="search-outline" size={26} color="#333" />
@@ -478,8 +469,8 @@ export default function Index() {
                 {selectedValue ? `${filterType === 'expenses' ? (t ? t('transactionModal.expense') : 'Expenses') : (t ? t('transactionModal.income') : 'Income')}: ${selectedValue}€` : (filterType === 'expenses' ? (t ? t('transactionModal.expense') : 'Expenses') : (t ? t('transactionModal.income') : 'Income'))}
               </Text>)}
           </View>
-          <BarChart data={data} barBorderRadius={4} yAxisThickness={0} xAxisThickness={0} hideRules={true}
-            hideYAxisText={true} noOfSections={1} height={150} xAxisLabelTextStyle={{ color: COLORS.white, fontWeight: 'bold' }} initialSpacing={10} onPress={handleBarPress} />
+          <BarChart data={data} barBorderRadius={8} yAxisThickness={0} xAxisThickness={0} hideRules={true}
+            hideYAxisText={true} noOfSections={1} height={110} xAxisLabelTextStyle={{ color: COLORS.white, fontWeight: 'bold' }} initialSpacing={10} onPress={handleBarPress} />
         </View>
       </View>
 

@@ -131,16 +131,19 @@ export default function Chat() {
 
       const context = [
         ...messages.map(msg => ({
-          role: msg.role,
+          role: msg.role === 'assistant' ? 'model' : 'user',
           parts: [{ text: msg.content }]
         })),
-        { role: "user", parts: [{ text: input }] }
+        {
+          role: 'user',
+          parts: [{ text: input }]
+        }
       ];
 
       console.log("Testi inviati a Gemini:", context.map(c => c.parts.map(p => p.text)).flat());
-      
+
       const result = await ai.models.generateContent({
-        model: "gemini-2.0-flash",
+        model: "gemini-2.5-flash",
         contents: context,
       });
 
