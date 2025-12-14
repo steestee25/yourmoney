@@ -59,7 +59,8 @@ export default function AboutScreen() {
   const avatarUri = session?.user?.user_metadata?.avatar_url || `https://ui-avatars.com/api/?name=${encodeURIComponent(displayName)}&background=8b5cf6&color=fff`
 
   return (
-    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+    <View style={styles.container}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.headerCard}>
         <View style={styles.headerLeft}>
           <Avatar uri={avatarUri} />
@@ -78,7 +79,6 @@ export default function AboutScreen() {
         <RowItem label="Account Information" />
         <RowItem label="Change Password" />
         <RowItem label="Device" />
-        <RowItem label="Connect to Banks" />
       </View>
 
       <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Settings</Text>
@@ -87,17 +87,23 @@ export default function AboutScreen() {
         <RowItem label="Help & Support" />
         <RowItem label="About" />
       </View>
+      
+      <View style={styles.redCard}>
+        <RowItem label="Logout" />
+      </View>
 
-      <View style={{ height: 40 }} />
-    </ScrollView>
+      </ScrollView>
+    </View>
   )
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: COLORS.white},
-  content: { padding: 20, paddingBottom: 80 },
+  container: { flex: 1, backgroundColor: COLORS.white },
+  content: { padding: 20, paddingBottom: 20 },
+  // leave space so content doesn't scroll under the tab bar
+  scroll: { flex: 1, marginBottom: 85 },
   headerCard: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 15,
     flexDirection: 'row',
@@ -126,16 +132,17 @@ const styles = StyleSheet.create({
 
   sectionTitle: { color: COLORS.temp, fontSize:16, marginTop:'3%', marginBottom: 8, fontWeight: '500' },
   whiteCard: {
-    backgroundColor: '#fff',
+    backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 15,
     marginBottom: 12,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.06,
-    shadowRadius: 4,
     elevation: 2,
+  },
+  redCard: {
+    backgroundColor: COLORS.red,
+    borderRadius: 12,
+    padding: 15,
+    marginTop: '5%',
   },
   row: {
     flexDirection: 'row',
@@ -146,13 +153,13 @@ const styles = StyleSheet.create({
   },
   rowLeft: { flexDirection: 'row', alignItems: 'center' },
   iconPlaceholder: {
-    width: 34,
-    height: 34,
+    width: 38,
+    height: 38,
     borderRadius: 8,
     borderWidth: 1,
     borderColor: '#efe6ff',
     marginRight: 14,
   },
-  rowLabel: { fontSize: 15, color: '#16121a' },
-  chev: { color: '#bdb3c8', fontSize: 20 },
+  rowLabel: { fontSize: 15, color: COLORS.temp, fontWeight: '500' },
+  chev: { color: '#bdb3c8', fontSize: 20},
 })
