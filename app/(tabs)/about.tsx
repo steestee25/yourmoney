@@ -1,3 +1,4 @@
+import { Feather, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import React, { useEffect, useState } from 'react';
 import { Image, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
@@ -18,7 +19,7 @@ function RowItem({ icon, label, onPress }: { icon?: React.ReactNode; label: stri
   return (
     <Pressable onPress={onPress} style={styles.row} android_ripple={{ color: '#eee' }}>
       <View style={styles.rowLeft}>
-        <View style={styles.iconPlaceholder} />
+        <View style={styles.iconPlaceholder}>{icon ?? null}</View>
         <Text style={styles.rowLabel}>{label}</Text>
       </View>
       <Text style={styles.chev}>›</Text>
@@ -89,16 +90,34 @@ export default function AboutScreen() {
 
       <Text style={styles.sectionTitle}>Account Settings</Text>
       <View style={styles.whiteCard}>
-        <RowItem label="Account Information" />
-        <RowItem label="Change Password" />
-        <RowItem label="Device" />
+        <RowItem
+          icon={<MaterialCommunityIcons name="account" size={24} color={COLORS.temp} />}
+          label="Account Information"
+        />
+        <RowItem
+          icon={<MaterialCommunityIcons name="form-textbox-password" size={24} color={COLORS.temp} />}
+          label="Change Password"
+        />
+        <RowItem
+          icon={<MaterialCommunityIcons name="devices" size={24} color={COLORS.temp} />}
+          label="Device"
+        />
       </View>
 
       <Text style={[styles.sectionTitle, { marginTop: 20 }]}>Settings</Text>
       <View style={styles.whiteCard}>
-        <RowItem label="Settings" />
-        <RowItem label="Help & Support" />
-        <RowItem label="About" />
+        <RowItem
+          icon={<Feather name="settings" size={22} color="black" />}
+          label="Settings"
+        />
+        <RowItem
+          icon={<MaterialCommunityIcons name="assistant" size={22} color={COLORS.temp} />}
+          label="Help & Support"
+        />
+        <RowItem
+          icon={<MaterialCommunityIcons name="information-slab-symbol" size={36} color={COLORS.temp} />}
+          label="About"
+        />
       </View>
       
       <Pressable
@@ -108,7 +127,9 @@ export default function AboutScreen() {
       >
         <View style={styles.row}>
           <View style={styles.rowLeft}>
-            <View style={styles.iconPlaceholder} />
+            <View style={styles.iconPlaceholder}>
+              <MaterialCommunityIcons name="logout" size={22} color={COLORS.white} />
+            </View>
             <Text style={[styles.rowLabel, { color: '#fff' }]}>Logout</Text>
           </View>
           <Text style={[styles.chev, { color: '#fff' }]}>›</Text>
@@ -152,12 +173,13 @@ const styles = StyleSheet.create({
     borderRadius: 20,
   },
   editText: { color: COLORS.primaryLightOpacityFill, fontWeight: '600' },
-
   sectionTitle: { color: COLORS.temp, fontSize:16, marginTop:'3%', marginBottom: 8, fontWeight: '500' },
   whiteCard: {
     backgroundColor: COLORS.white,
     borderRadius: 12,
     padding: 15,
+    paddingTop:10,
+    paddingBottom:10,
     marginBottom: 12,
     elevation: 2,
   },
@@ -182,6 +204,8 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: '#efe6ff',
     marginRight: 14,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   rowLabel: { fontSize: 15, color: COLORS.temp, fontWeight: '500' },
   chev: { color: '#bdb3c8', fontSize: 20},
