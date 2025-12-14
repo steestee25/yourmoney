@@ -470,7 +470,7 @@ export default function Index() {
               </Text>)}
           </View>
           <BarChart data={data} barBorderRadius={8} yAxisThickness={0} xAxisThickness={0} hideRules={true}
-            hideYAxisText={true} noOfSections={1} height={110} xAxisLabelTextStyle={{ color: COLORS.white, fontWeight: 'bold' }} initialSpacing={10} onPress={handleBarPress} />
+            hideYAxisText={true} noOfSections={1} height={125} xAxisLabelTextStyle={{ color: COLORS.white, fontWeight: 'bold' }} initialSpacing={10} onPress={handleBarPress} />
         </View>
       </View>
 

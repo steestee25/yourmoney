@@ -27,7 +27,7 @@ export const styles = StyleSheet.create({
     borderColor: COLORS.borderWhite,
   },
   recapContainer: {
-    flex: 0.36,
+    flex: 0.4,
     marginTop: '3%',
     marginLeft: '5%',
     marginRight: '5%',
@@ -45,7 +45,7 @@ export const styles = StyleSheet.create({
   },
   recapCardExpensesContainer: {
     left: '5%',
-    marginBottom: '8%',
+    marginBottom: '10%',
   },
   selectedValueText: {
     position: 'absolute',
