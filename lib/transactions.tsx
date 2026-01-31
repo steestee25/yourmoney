@@ -290,3 +290,43 @@ export const fetchIncomeByMonth = async (userId: string) => {
     return [];
   }
 };
+
+/**
+ * Fetch total expenses for the previous calendar month grouped by category
+ * Returns array of { category, total } ordered by total desc
+ */
+export const fetchExpensesByCategoryLastMonth = async (userId: string) => {
+  try {
+    const today = new Date();
+    // Start of previous month
+    const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+    const endOfLastMonth = new Date(startOfThisMonth.getTime());
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('category, amount')
+      .eq('user_id', userId)
+      .gte('date', startOfLastMonth.toISOString())
+      .lt('date', endOfLastMonth.toISOString())
+      .lt('amount', 0);
+
+    if (error) {
+      console.error('Errore nel fetch spese per categoria ultimo mese:', error.message);
+      return [];
+    }
+
+    const totals: Record<string, number> = {};
+    (data || []).forEach((tx: any) => {
+      const cat = tx.category || 'Other';
+      totals[cat] = (totals[cat] || 0) + Math.abs(tx.amount);
+    });
+
+    return Object.entries(totals)
+      .map(([category, total]) => ({ category, total: Math.round(total) }))
+      .sort((a, b) => b.total - a.total);
+  } catch (err) {
+    console.error('Errore inaspettato nel fetch spese per categoria:', err);
+    return [];
+  }
+};
