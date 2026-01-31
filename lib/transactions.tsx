@@ -54,6 +54,12 @@ export const createTransaction = async (
   date: Date
 ): Promise<DBTransaction | null> => {
   try {
+    // When only a date (no time) is selected, avoid timezone shifts by
+    // storing the date at local midday (12:00). This prevents ISO string
+    // conversion from moving the date to the previous day in UTC.
+    const storeDate = new Date(date.getTime());
+    storeDate.setHours(12, 0, 0, 0);
+
     const { data, error } = await supabase
       .from('transactions')
       .insert([
@@ -62,7 +68,7 @@ export const createTransaction = async (
           name,
           category,
           amount,
-          date: date.toISOString(),
+          date: storeDate.toISOString(),
         },
       ])
       .select()
@@ -94,8 +100,27 @@ export const updateTransaction = async (
 ): Promise<DBTransaction | null> => {
   try {
     const updateData: any = { ...updates };
-    if (updates.date) {
-      updateData.date = updates.date.toISOString();
+      if (updates.date !== undefined && updates.date !== null) {
+      // Accept Date, ISO string, or timestamp
+      let iso: string | null = null;
+      if (updates.date instanceof Date) {
+        // Normalize to local midday to avoid timezone shifting to previous day
+        const dCopy = new Date(updates.date.getTime());
+        dCopy.setHours(12, 0, 0, 0);
+        iso = dCopy.toISOString();
+      } else if (typeof updates.date === 'string' || typeof updates.date === 'number') {
+        const d = new Date(updates.date as any);
+        if (!isNaN(d.getTime())) {
+          d.setHours(12, 0, 0, 0);
+          iso = d.toISOString();
+        }
+      }
+      if (iso) {
+        updateData.date = iso;
+      } else {
+        console.warn('updateTransaction: invalid date provided, ignoring date update', updates.date);
+        delete updateData.date;
+      }
     }
 
     const { data, error } = await supabase
@@ -106,13 +131,13 @@ export const updateTransaction = async (
       .single();
 
     if (error) {
-      console.error('Errore nell\'update transazione:', error.message);
+      console.error("Errore nell'update transazione:", error.message || error);
       return null;
     }
 
     return data;
   } catch (err) {
-    console.error('Errore inaspettato nell\'update transazione:', err);
+    console.error("Errore inaspettato nell'update transazione:", err);
     return null;
   }
 };
