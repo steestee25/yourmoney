@@ -1,7 +1,7 @@
 import { FontAwesome5 } from '@expo/vector-icons'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, Dimensions, ScrollView, Text, View } from 'react-native'
+import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, View } from 'react-native'
 import { PieChart } from 'react-native-gifted-charts'
 import { COLORS } from '../../constants/color'
 import { useAuth } from '../../contexts/AuthContext'
@@ -20,6 +20,7 @@ export default function Advices() {
   const [loading, setLoading] = useState(true)
 
   const { locale } = useTranslation()
+  const [refreshing, setRefreshing] = useState(false)
 
   // Derive category colors from locales so colors stay consistent with Home
   const categoriesFromLocale: Record<string, any> = (locales as any)[locale]?.categories || {}
@@ -65,14 +66,24 @@ export default function Advices() {
   }, [])
 
   useEffect(() => {
-    const load = async () => {
-      if (!session?.user) return
+    fetchAndSetData()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [session])
+
+  const fetchAndSetData = async () => {
+    if (!session?.user) return
+    try {
       setLoading(true)
       const result = await fetchExpensesByCategoryLastMonth(session.user.id)
 
-      // Map fetched totals to pie chart data
       const rows = (result || [])
-      // find max value index
+      if (rows.length === 0) {
+        setPieData([])
+        setFilteredAdvice([])
+        setSelectedIndex(null)
+        return
+      }
+
       const maxIndex = rows.reduce((acc: number, cur: any, i: number) => (cur.total > (rows[acc]?.total || 0) ? i : acc), 0)
       const mapped = rows.map((r: any, idx: number) => {
         const base = (categoryColors[r.category] && categoryColors[r.category][0]) || '#CCCCCC'
@@ -85,23 +96,28 @@ export default function Advices() {
       })
 
       setPieData(mapped)
-      // Autofocus: set selected index to the max slice so legend/advice reflect initial focus
-      if (mapped.length > 0) {
-        setSelectedIndex(mapped.findIndex((m) => m.focused) ?? 0)
-        const advice = [
-          { text: "Se riduci del 12% le spese per le consegne, risparmierai circa 18€/settimana; così potrai permetterti l'iPhone 15 che desideravi in ~9 mesi.", category: 'Svago' },
-          { text: "Se salti la palestra questo mese, risparmierai 50€; è abbastanza per un weekend fuori porta.", category: 'Svago' },
-          { text: "Se ti rechi al lavoro con un abbonamento per i trasporti pubblici, risparmierai 30€/mese; è abbastanza per una gita nel weekend.", category: 'Trasporti' },
-          { text: "Se riduci del 10% le uscite settimanali al bar, risparmierai 20€/mese; così potrai avere un fondo emergenze di 500€ in ~6 mesi.", category: 'Cibo' }
-        ]
-        const focused = mapped.find((m) => m.focused)
-        if (focused) setFilteredAdvice(advice.filter(a => a.category === focused.label))
-      }
-      setLoading(false)
-    }
+      setSelectedIndex(mapped.findIndex((m) => m.focused) ?? 0)
 
-    load()
-  }, [session])
+      const advice = [
+        { text: "Se riduci del 12% le spese per le consegne, risparmierai circa 18€/settimana; così potrai permetterti l'iPhone 15 che desideravi in ~9 mesi.", category: 'Svago' },
+        { text: "Se salti la palestra questo mese, risparmierai 50€; è abbastanza per un weekend fuori porta.", category: 'Svago' },
+        { text: "Se ti rechi al lavoro con un abbonamento per i trasporti pubblici, risparmierai 30€/mese; è abbastanza per una gita nel weekend.", category: 'Trasporti' },
+        { text: "Se riduci del 10% le uscite settimanali al bar, risparmierai 20€/mese; così potrai avere un fondo emergenze di 500€ in ~6 mesi.", category: 'Cibo' }
+      ]
+      const focused = mapped.find((m) => m.focused)
+      if (focused) setFilteredAdvice(advice.filter(a => a.category === focused.label))
+    } catch (err) {
+      console.error('Errore fetch advices chart:', err)
+    } finally {
+      setLoading(false)
+      setRefreshing(false)
+    }
+  }
+
+  const onRefresh = async () => {
+    setRefreshing(true)
+    await fetchAndSetData()
+  }
 
   const renderStyledText = (text: string) => {
     const parts = text.split(/(\d+%?|\€\d+|\d+\s*(week|month)s?)/gi)
@@ -163,7 +179,11 @@ export default function Advices() {
           </View>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} style={{ paddingHorizontal: HORIZONTAL_GUTTER }}>
+        <ScrollView
+          showsVerticalScrollIndicator={false}
+          style={{ paddingHorizontal: HORIZONTAL_GUTTER }}
+          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
+        >
           <View style={{ width, alignItems: 'center', paddingVertical: 20 }}>
             <PieChart
               data={pieData.map((p, i) => ({ ...p, onPress: () => handlePiePress(p, i) }))}
