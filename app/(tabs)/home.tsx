@@ -14,6 +14,7 @@ import { createTransaction, fetchExpensesByMonth, fetchIncomeByMonth, fetchUserT
 import locales from '../../locales/locales.json';
 
 import { COLORS } from '../../constants/color';
+import { HORIZONTAL_GUTTER, RECAP_TOP } from '../../styles/spacing';
 
 export default function Index() {
 
@@ -423,7 +424,7 @@ export default function Index() {
       </View>
 
       {/* Expenses/Income selector */}
-      <View style={{ flexDirection: 'row', marginTop: '3%', marginHorizontal: 20, borderRadius: 35,
+      <View style={{ flexDirection: 'row', marginTop: RECAP_TOP, marginHorizontal: HORIZONTAL_GUTTER, borderRadius: 35,
         backgroundColor: '#faf9f9ff', padding: 4 }}>
         <TouchableOpacity
           onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setFilterType('expenses'); setSelectedValue(null); setSelectedIndex(null); }}
