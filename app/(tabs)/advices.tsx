@@ -5,7 +5,9 @@ import { ActivityIndicator, Dimensions, ScrollView, Text, View } from 'react-nat
 import { PieChart } from 'react-native-gifted-charts'
 import { COLORS } from '../../constants/color'
 import { useAuth } from '../../contexts/AuthContext'
+import { useTranslation } from '../../lib/i18n'
 import { fetchExpensesByCategoryLastMonth } from '../../lib/transactions'
+import locales from '../../locales/locales.json'
 import { HEADER_TOP, HORIZONTAL_GUTTER } from '../../styles/spacing'
 
 const { width } = Dimensions.get('window')
@@ -16,13 +18,15 @@ export default function Advices() {
   const [filteredAdvice, setFilteredAdvice] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
-  const categoryColors: Record<string, string[]> = {
-    Svago: ['#006DFF', '#006DFF'],
-    Cibo: ['#93FCF8', '#3BE9DE'],
-    Trasporti: ['#BDB2FA', '#8F80F3'],
-    Bollette: ['#FFA5BA', '#FF7F97'],
-  }
+  const { locale } = useTranslation()
 
+  // Derive category colors from locales so colors stay consistent with Home
+  const categoriesFromLocale: Record<string, any> = (locales as any)[locale]?.categories || {}
+  const categoryColors: Record<string, string[]> = Object.fromEntries(
+    Object.entries(categoriesFromLocale).map(([k, v]) => [k, [v.color, v.color]])
+  )
+
+  // Use FontAwesome icon names for advice cards (kept minimal)
   const categoryIcons: Record<string, string> = {
     Svago: 'beer',
     Cibo: 'utensils',
@@ -30,13 +34,30 @@ export default function Advices() {
     Bollette: 'file-invoice-dollar',
   }
 
+  const appendHexOpacity = (hex: string, alpha = '20') => {
+    if (!hex || typeof hex !== 'string') return hex;
+    if (hex.length === 7 && hex.startsWith('#')) return `${hex}${alpha}`;
+    // If already has alpha or not a standard hex, return original
+    return hex;
+  }
+
+  const hexToRgba = (hex: string, alpha = 0.125) => {
+    if (!hex || typeof hex !== 'string') return hex;
+    // Normalize #RRGGBB
+    if (hex.startsWith('#') && (hex.length === 7 || hex.length === 9)) {
+      const r = parseInt(hex.slice(1, 3), 16)
+      const g = parseInt(hex.slice(3, 5), 16)
+      const b = parseInt(hex.slice(5, 7), 16)
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`
+    }
+    return hex
+  }
+
   // Hardcoded advice items used when a pie slice is selected
   useEffect(() => {
     const hardcodedAdvice = [
       { text: "Se riduci del 12% le spese per le consegne, risparmierai circa 18€/settimana; così potrai permetterti l'iPhone 15 che desideravi in ~9 mesi.", category: 'Svago' },
       { text: "Se salti la palestra questo mese, risparmierai 50€; è abbastanza per un weekend fuori porta.", category: 'Svago' },
-      { text: "Se ti rechi al lavoro con un abbonamento per i trasporti pubblici, risparmierai 30€/mese; è abbastanza per una gita nel weekend.", category: 'Trasporti' },
-      { text: "Se riduci del 10% le uscite settimanali al bar, risparmierai 20€/mese; così potrai avere un fondo emergenze di 500€ in ~6 mesi.", category: 'Cibo' }
     ]
 
     setFilteredAdvice(hardcodedAdvice)
@@ -50,8 +71,10 @@ export default function Advices() {
 
       // Map fetched totals to pie chart data
       const mapped = (result || []).map((r: any, idx: number) => {
-        const color = (categoryColors[r.category] && categoryColors[r.category][0]) || ['#CCCCCC'][0]
-        const gradient = (categoryColors[r.category] && categoryColors[r.category][1]) || color
+        const base = (categoryColors[r.category] && categoryColors[r.category][0]) || '#CCCCCC'
+        const gradBase = (categoryColors[r.category] && categoryColors[r.category][1]) || base
+        const color = hexToRgba(base, 0.28)
+        const gradient = hexToRgba(gradBase, 0.28)
         return { value: r.total, color, gradientCenterColor: gradient, label: r.category }
       })
 
@@ -118,7 +141,7 @@ export default function Advices() {
             <PieChart
               data={pieData.map(p => ({ ...p, onPress: () => handlePiePress(p) }))}
               donut
-              showGradient
+              showGradient={false}
               sectionAutoFocus
               radius={90}
               innerRadius={60}
@@ -134,7 +157,10 @@ export default function Advices() {
               {filteredAdvice.map((item, index) => (
                 <LinearGradient
                   key={index}
-                  colors={categoryColors[item.category] || ['#CFFFE6', '#CFFFE6']}
+                  colors={
+                    (categoryColors[item.category] && [appendHexOpacity(categoryColors[item.category][0], '20'), categoryColors[item.category][1]])
+                    || ['#CFFFE6', '#CFFFE6']
+                  }
                   start={{ x: 0, y: 0 }}
                   end={{ x: 1, y: 1 }}
                   style={{
@@ -149,7 +175,7 @@ export default function Advices() {
                     alignItems: 'center'
                   }}
                 >
-                  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: 'rgba(255, 255, 255, 0.2)', justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: appendHexOpacity((categoryColors[item.category] && categoryColors[item.category][0]) || '#CCCCCC', '20'), justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
                     <FontAwesome5
                       name={categoryIcons[item.category] || 'lightbulb'}
                       size={18}
