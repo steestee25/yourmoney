@@ -15,6 +15,7 @@ const { width } = Dimensions.get('window')
 export default function Advices() {
   const { session, loading: authLoading } = useAuth()
   const [pieData, setPieData] = useState<{ value: number; color: string; gradientCenterColor?: string; label: string }[]>([])
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [filteredAdvice, setFilteredAdvice] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -70,15 +71,32 @@ export default function Advices() {
       const result = await fetchExpensesByCategoryLastMonth(session.user.id)
 
       // Map fetched totals to pie chart data
-      const mapped = (result || []).map((r: any, idx: number) => {
+      const rows = (result || [])
+      // find max value index
+      const maxIndex = rows.reduce((acc: number, cur: any, i: number) => (cur.total > (rows[acc]?.total || 0) ? i : acc), 0)
+      const mapped = rows.map((r: any, idx: number) => {
         const base = (categoryColors[r.category] && categoryColors[r.category][0]) || '#CCCCCC'
         const gradBase = (categoryColors[r.category] && categoryColors[r.category][1]) || base
-        const color = hexToRgba(base, 0.28)
-        const gradient = hexToRgba(gradBase, 0.28)
-        return { value: r.total, color, gradientCenterColor: gradient, label: r.category }
+        const color = hexToRgba(base, 0.125)
+        const gradient = hexToRgba(gradBase, 0.125)
+        const item: any = { value: r.total, color, gradientCenterColor: gradient, label: r.category }
+        if (idx === maxIndex) item.focused = true
+        return item
       })
 
       setPieData(mapped)
+      // Autofocus: set selected index to the max slice so legend/advice reflect initial focus
+      if (mapped.length > 0) {
+        setSelectedIndex(mapped.findIndex((m) => m.focused) ?? 0)
+        const advice = [
+          { text: "Se riduci del 12% le spese per le consegne, risparmierai circa 18€/settimana; così potrai permetterti l'iPhone 15 che desideravi in ~9 mesi.", category: 'Svago' },
+          { text: "Se salti la palestra questo mese, risparmierai 50€; è abbastanza per un weekend fuori porta.", category: 'Svago' },
+          { text: "Se ti rechi al lavoro con un abbonamento per i trasporti pubblici, risparmierai 30€/mese; è abbastanza per una gita nel weekend.", category: 'Trasporti' },
+          { text: "Se riduci del 10% le uscite settimanali al bar, risparmierai 20€/mese; così potrai avere un fondo emergenze di 500€ in ~6 mesi.", category: 'Cibo' }
+        ]
+        const focused = mapped.find((m) => m.focused)
+        if (focused) setFilteredAdvice(advice.filter(a => a.category === focused.label))
+      }
       setLoading(false)
     }
 
@@ -96,7 +114,7 @@ export default function Advices() {
 
   const renderDot = (color: string) => <View style={{ height: 10, width: 10, borderRadius: 5, backgroundColor: color, marginRight: 10 }} />
 
-  const handlePiePress = (slice: any) => {
+  const handlePiePress = (slice: any, index: number) => {
     // For demo purposes we filter hardcoded advice by category
     const advice = [
       { text: "Se riduci del 12% le spese per le consegne, risparmierai circa 18€/settimana; così potrai permetterti l'iPhone 15 che desideravi in ~9 mesi.", category: 'Svago' },
@@ -105,13 +123,22 @@ export default function Advices() {
       { text: "Se riduci del 10% le uscite settimanali al bar, risparmierai 20€/mese; così potrai avere un fondo emergenze di 500€ in ~6 mesi.", category: 'Cibo' }
     ]
 
-    setFilteredAdvice(advice.filter(a => a.category === slice.label))
+    // Toggle selection on same index and update pieData focused flags
+    if (selectedIndex === index) {
+      setSelectedIndex(null)
+      setPieData((prev) => prev.map((p) => ({ ...p, focused: false })))
+      setFilteredAdvice(advice)
+    } else {
+      setSelectedIndex(index)
+      setPieData((prev) => prev.map((p, i) => ({ ...p, focused: i === index })))
+      setFilteredAdvice(advice.filter(a => a.category === slice.label))
+    }
   }
 
   const renderLegendComponent = () => (
     <>
       <View style={{ flexDirection: 'row', justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' }}>
-        {pieData.map((p) => (
+        {(selectedIndex !== null ? [pieData[selectedIndex]].filter(Boolean) : pieData).map((p) => (
           <View key={p.label} style={{ flexDirection: 'row', alignItems: 'center', width: 150, marginRight: 12, marginBottom: 6 }}>
             {renderDot(p.color)}<Text style={{ color: 'black' }}>{p.label}: {Math.round((p.value / Math.max(1, pieData.reduce((s, x) => s + x.value, 0))) * 100)}%</Text>
           </View>
@@ -139,10 +166,12 @@ export default function Advices() {
         <ScrollView showsVerticalScrollIndicator={false} style={{ paddingHorizontal: HORIZONTAL_GUTTER }}>
           <View style={{ width, alignItems: 'center', paddingVertical: 20 }}>
             <PieChart
-              data={pieData.map(p => ({ ...p, onPress: () => handlePiePress(p) }))}
+              data={pieData.map((p, i) => ({ ...p, onPress: () => handlePiePress(p, i) }))}
               donut
               showGradient={false}
               sectionAutoFocus
+              focusOnPress
+              extraRadiusForFocused={10}
               radius={90}
               innerRadius={60}
               innerCircleColor={'#F5F5F5'}
