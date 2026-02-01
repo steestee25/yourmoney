@@ -108,7 +108,9 @@ export default function Advices() {
       })
 
       setPieData(mapped)
-      setSelectedIndex(mapped.findIndex((m) => m.focused) ?? 0)
+      // Don't set selectedIndex - keep it null to show all categories in legend
+      // User can click to filter to specific category
+      setSelectedIndex(null)
 
       const advice = [
         { text: "Se riduci del 12% le spese per le consegne, risparmierai circa 18€/settimana; così potrai permetterti l'iPhone 15 che desideravi in ~9 mesi.", category: 'Svago' },
@@ -116,8 +118,8 @@ export default function Advices() {
         { text: "Se ti rechi al lavoro con un abbonamento per i trasporti pubblici, risparmierai 30€/mese; è abbastanza per una gita nel weekend.", category: 'Trasporti' },
         { text: "Se riduci del 10% le uscite settimanali al bar, risparmierai 20€/mese; così potrai avere un fondo emergenze di 500€ in ~6 mesi.", category: 'Cibo' }
       ]
-      const focused = mapped.find((m) => m.focused)
-      if (focused) setFilteredAdvice(advice.filter(a => a.category === focused.label))
+      // Show all advice initially, user will filter by clicking
+      setFilteredAdvice(advice)
     } catch (err) {
       console.error('Errore fetch advices chart:', err)
     } finally {
