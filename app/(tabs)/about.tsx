@@ -91,6 +91,11 @@ export default function AboutScreen() {
 
   return (
     <View style={styles.container}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 40, justifyContent: 'space-between' }}>
+        <View>
+          <Text style={{ color: "#333", fontSize: 34, fontWeight: 'bold' }}>Profile</Text>
+        </View>
+      </View>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
       <View style={styles.headerCard}>
         <View style={styles.headerLeft}>
@@ -214,7 +219,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.06,
     shadowRadius: 6,
     elevation: 3,
-    marginTop: '10%',
     marginBottom: 12,
   },
   headerLeft: { flexDirection: 'row', alignItems: 'center' },
