@@ -1,16 +1,19 @@
 import { FontAwesome5 } from '@expo/vector-icons'
+import * as Haptics from 'expo-haptics'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, View } from 'react-native'
+import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
 import { PieChart } from 'react-native-gifted-charts'
 import { COLORS } from '../../constants/color'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTranslation } from '../../lib/i18n'
-import { fetchExpensesByCategoryLastMonth } from '../../lib/transactions'
+import { fetchExpensesByCategoryLast3Months, fetchExpensesByCategoryLastMonth, fetchExpensesByCategoryLastYear } from '../../lib/transactions'
 import locales from '../../locales/locales.json'
 import { HEADER_TOP, HORIZONTAL_GUTTER } from '../../styles/spacing'
 
 const { width } = Dimensions.get('window')
+
+type PeriodType = 'month' | '3months' | 'year'
 
 export default function Advices() {
   const { session, loading: authLoading } = useAuth()
@@ -18,6 +21,7 @@ export default function Advices() {
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [filteredAdvice, setFilteredAdvice] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [period, setPeriod] = useState<PeriodType>('month')
 
   const { locale } = useTranslation()
   const [refreshing, setRefreshing] = useState(false)
@@ -68,13 +72,21 @@ export default function Advices() {
   useEffect(() => {
     fetchAndSetData()
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session])
+  }, [session, period])
 
   const fetchAndSetData = async () => {
     if (!session?.user) return
     try {
       setLoading(true)
-      const result = await fetchExpensesByCategoryLastMonth(session.user.id)
+      
+      let result
+      if (period === 'month') {
+        result = await fetchExpensesByCategoryLastMonth(session.user.id)
+      } else if (period === '3months') {
+        result = await fetchExpensesByCategoryLast3Months(session.user.id)
+      } else {
+        result = await fetchExpensesByCategoryLastYear(session.user.id)
+      }
 
       const rows = (result || [])
       if (rows.length === 0) {
@@ -173,10 +185,66 @@ export default function Advices() {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white, paddingTop: HEADER_TOP }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: HORIZONTAL_GUTTER }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: HORIZONTAL_GUTTER, justifyContent: 'space-between' }}>
           <View>
-            <Text style={{ color: "#333", fontSize: 28, fontWeight: 'bold' }}>Advices</Text>
+            <Text style={{ color: "#333", fontSize: 34, fontWeight: 'bold' }}>Advices</Text>
           </View>
+        </View>
+
+        {/* Period Toggle */}
+        <View style={{ flexDirection: 'row', marginTop: 15, marginHorizontal: HORIZONTAL_GUTTER, borderRadius: 35,
+          backgroundColor: '#faf9f9ff', padding: 4 }}>
+          <TouchableOpacity
+            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setPeriod('month'); setSelectedIndex(null); }}
+            style={{
+              flex: 1,
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              borderRadius: 35,
+              backgroundColor: period === 'month' ? '#ffffff' : 'transparent',
+              borderWidth: period === 'month' ? 0.5 : 0,
+              borderColor: period === 'month' ? '#e0e0e0f1' : 'transparent',
+            }}
+          >
+            <Text style={{ textAlign: 'center', 
+              fontWeight: period === 'month' ? '600' : '400', color: "#333" }}>
+              Last Month
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setPeriod('3months'); setSelectedIndex(null); }}
+            style={{
+              flex: 1,
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              borderRadius: 35,
+              backgroundColor: period === '3months' ? '#ffffff' : 'transparent',
+              borderWidth: period === '3months' ? 0.5 : 0,
+              borderColor: period === '3months' ? '#e0e0e0f1' : 'transparent',
+            }}
+          >
+            <Text style={{ textAlign: 'center',
+              fontWeight: period === '3months' ? '600' : '400', color: "#333" }}>
+              3 Months
+            </Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setPeriod('year'); setSelectedIndex(null); }}
+            style={{
+              flex: 1,
+              paddingVertical: 8,
+              paddingHorizontal: 12,
+              borderRadius: 35,
+              backgroundColor: period === 'year' ? '#ffffff' : 'transparent',
+              borderWidth: period === 'year' ? 0.5 : 0,
+              borderColor: period === 'year' ? '#e0e0e0f1' : 'transparent',
+            }}
+          >
+            <Text style={{ textAlign: 'center',
+              fontWeight: period === 'year' ? '600' : '400', color: "#333" }}>
+              Last Year
+            </Text>
+          </TouchableOpacity>
         </View>
 
         <ScrollView
@@ -184,7 +252,7 @@ export default function Advices() {
           style={{ paddingHorizontal: HORIZONTAL_GUTTER }}
           refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
         >
-          <View style={{ width, alignItems: 'center', paddingVertical: 20 }}>
+          <View style={{ alignItems: 'center', paddingVertical: 20 }}>
             <PieChart
               data={pieData.map((p, i) => ({ ...p, onPress: () => handlePiePress(p, i) }))}
               donut

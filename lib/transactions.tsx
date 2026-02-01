@@ -355,3 +355,79 @@ export const fetchExpensesByCategoryLastMonth = async (userId: string) => {
     return [];
   }
 };
+
+/**
+ * Fetch total expenses for the last 3 months grouped by category
+ * Returns array of { category, total } ordered by total desc
+ */
+export const fetchExpensesByCategoryLast3Months = async (userId: string) => {
+  try {
+    const today = new Date();
+    const startOfThisMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const startOf3MonthsAgo = new Date(today.getFullYear(), today.getMonth() - 3, 1);
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('category, amount')
+      .eq('user_id', userId)
+      .gte('date', startOf3MonthsAgo.toISOString())
+      .lt('date', startOfThisMonth.toISOString())
+      .lt('amount', 0);
+
+    if (error) {
+      console.error('Errore nel fetch spese per categoria ultimi 3 mesi:', error.message);
+      return [];
+    }
+
+    const totals: Record<string, number> = {};
+    (data || []).forEach((tx: any) => {
+      const cat = tx.category || 'Other';
+      totals[cat] = (totals[cat] || 0) + Math.abs(tx.amount);
+    });
+
+    return Object.entries(totals)
+      .map(([category, total]) => ({ category, total: Math.round(total) }))
+      .sort((a, b) => b.total - a.total);
+  } catch (err) {
+    console.error('Errore inaspettato nel fetch spese per categoria ultimi 3 mesi:', err);
+    return [];
+  }
+};
+
+/**
+ * Fetch total expenses for the last year grouped by category
+ * Returns array of { category, total } ordered by total desc
+ */
+export const fetchExpensesByCategoryLastYear = async (userId: string) => {
+  try {
+    const today = new Date();
+    const startOfThisYear = new Date(today.getFullYear(), 0, 1);
+    const startOfLastYear = new Date(today.getFullYear() - 1, 0, 1);
+
+    const { data, error } = await supabase
+      .from('transactions')
+      .select('category, amount')
+      .eq('user_id', userId)
+      .gte('date', startOfLastYear.toISOString())
+      .lt('date', startOfThisYear.toISOString())
+      .lt('amount', 0);
+
+    if (error) {
+      console.error('Errore nel fetch spese per categoria ultimo anno:', error.message);
+      return [];
+    }
+
+    const totals: Record<string, number> = {};
+    (data || []).forEach((tx: any) => {
+      const cat = tx.category || 'Other';
+      totals[cat] = (totals[cat] || 0) + Math.abs(tx.amount);
+    });
+
+    return Object.entries(totals)
+      .map(([category, total]) => ({ category, total: Math.round(total) }))
+      .sort((a, b) => b.total - a.total);
+  } catch (err) {
+    console.error('Errore inaspettato nel fetch spese per categoria ultimo anno:', err);
+    return [];
+  }
+};
