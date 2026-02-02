@@ -88,6 +88,20 @@ export default function Advices() {
         result = await fetchExpensesByCategoryLastYear(session.user.id)
       }
 
+      // Log grezzo del risultato del fetch (utile per debug Supabase)
+      console.log('advices: raw fetch result:', result)
+      // Se la funzione di fetch ritorna l'oggetto standard { data, error }, loggali separatamente
+      try {
+        if (result && typeof result === 'object') {
+          // @ts-ignore
+          if ('data' in result) console.log('advices: fetch data:', result.data)
+          // @ts-ignore
+          if ('error' in result) console.log('advices: fetch error:', result.error)
+        }
+      } catch (e) {
+        console.log('advices: unable to inspect fetch result shape', e)
+      }
+
       const rows = (result || [])
       if (rows.length === 0) {
         setPieData([])
