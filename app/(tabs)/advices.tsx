@@ -1,8 +1,9 @@
 import { FontAwesome5 } from '@expo/vector-icons'
+import { GoogleGenAI } from '@google/genai'
 import * as Haptics from 'expo-haptics'
 import { LinearGradient } from 'expo-linear-gradient'
 import React, { useEffect, useState } from 'react'
-import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Text, TouchableOpacity, View } from 'react-native'
+import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native'
 import { PieChart } from 'react-native-gifted-charts'
 import { COLORS } from '../../constants/color'
 import { useAuth } from '../../contexts/AuthContext'
@@ -16,12 +17,14 @@ const { width } = Dimensions.get('window')
 type PeriodType = 'month' | '3months' | 'year'
 
 export default function Advices() {
+  const ai = new GoogleGenAI({ apiKey: process.env.EXPO_PUBLIC_GEMINI_API_KEY })
   const { session, loading: authLoading } = useAuth()
   const [pieData, setPieData] = useState<{ value: number; color: string; gradientCenterColor?: string; label: string }[]>([])
   const [selectedIndex, setSelectedIndex] = useState<number | null>(null)
   const [filteredAdvice, setFilteredAdvice] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [period, setPeriod] = useState<PeriodType>('month')
+  const [enableLLM, setEnableLLM] = useState(true)
 
   const { locale } = useTranslation()
   const [refreshing, setRefreshing] = useState(false)
@@ -133,7 +136,111 @@ export default function Advices() {
         { text: "Se riduci del 10% le uscite settimanali al bar, risparmierai 20€/mese; così potrai avere un fondo emergenze di 500€ in ~6 mesi.", category: 'Cibo' }
       ]
       // Show all advice initially, user will filter by clicking
-      setFilteredAdvice(advice)
+
+      // --- Prepare a compact summary to send to LLM ---
+      const summarizeExpenses = (rows: any[], period: PeriodType) => {
+        const total = rows.reduce((s: number, r: any) => s + (r.total ?? 0), 0)
+        const count = rows.length
+        const avg = count ? total / count : 0
+
+        // Top categories by total
+        const byCat: Record<string, number> = {}
+        rows.forEach((r: any) => { byCat[r.category] = (byCat[r.category] || 0) + (r.total ?? 0) })
+        const topCategories = Object.entries(byCat)
+          .sort((a: any, b: any) => b[1] - a[1])
+          .slice(0, 6)
+          .map(([k, v]) => ({ category: k, total: v, pct: total ? Math.round((v / total) * 100) : 0 }))
+
+        // Simple monthly aggregates if rows contain month/date info
+        const monthly: Record<string, number> = {}
+        rows.forEach((r: any) => {
+          const m = r.month || (r.date ? (new Date(r.date)).toISOString().slice(0, 7) : 'unknown')
+          monthly[m] = (monthly[m] || 0) + (r.total ?? 0)
+        })
+
+        // Small sample of transactions (if available)
+        const samples = rows.slice(0, 20).map((r: any) => ({ date: r.date, amount: r.total ?? r.amount, category: r.category, description: r.description || r.merchant }))
+
+        return { total, count, avg, topCategories, monthly: Object.entries(monthly).sort(), samples }
+      }
+
+      const callAdviceEndpoint = async (summary: any, period: PeriodType) => {
+        // Direct call to Google Gemini like in chat.tsx
+        try {
+          const prompt = `Sei un consulente finanziario personale che fornisce consigli pratici e concisi in italiano. Riceverai questo oggetto JSON riepilogativo delle spese. Genera un array JSON di 3-6 consigli azionabili, ciascuno con testo breve e la categoria suggerita. Rispondi SOLO con JSON: { "advices": [ { "text": "...", "category": "..." }, ... ] }\n\nSummary: ${JSON.stringify(summary)}\nPeriod: ${period}`
+
+          const contents = [
+            {
+              role: 'user',
+              parts: [{ text: prompt }]
+            }
+          ]
+
+          const result = await ai.models.generateContent({
+            model: 'gemini-2.5-flash',
+            contents
+          })
+
+          const text = result?.text || (result?.outputs && result.outputs[0]?.content?.map((c: any) => c.text).join('')) || ''
+          console.log('advices: Gemini raw output:', text)
+
+          // Try parse JSON from the model output
+          try {
+            const parsed = JSON.parse(text)
+            if (Array.isArray(parsed.advices)) return parsed.advices
+          } catch (e) {
+            // If not valid JSON, try to extract a JSON substring
+            const start = text.indexOf('{')
+            const end = text.lastIndexOf('}')
+            if (start !== -1 && end !== -1 && end > start) {
+              try {
+                const maybe = JSON.parse(text.slice(start, end + 1))
+                if (Array.isArray(maybe.advices)) return maybe.advices
+              } catch (e2) {
+                console.log('advices: failed to parse JSON from Gemini output', e2)
+              }
+            }
+          }
+        } catch (e) {
+          console.error('advices: error calling Gemini', e)
+        }
+
+        // Local fallback: generate concise advices from top categories
+        const fallback = (s: any) => {
+          const adv: any[] = []
+          const tops = s.topCategories || []
+          for (let i = 0; i < Math.min(4, tops.length); i++) {
+            const t = tops[i]
+            adv.push({ text: `Riduci del 10% le spese in ${t.category}, risparmieresti circa ${Math.round((t.pct || 0) * (s.total / 100))}€ al mese.`, category: t.category })
+          }
+          if (adv.length === 0) adv.push({ text: 'Controlla le spese non ricorrenti e imposta un budget mensile per le categorie più volatili.', category: 'General' })
+          return adv
+        }
+
+        return fallback(summary)
+      }
+
+      const summary = summarizeExpenses(rows, period)
+
+      // Only call LLM when no specific category slice is selected (all categories)
+      if (selectedIndex === null) {
+        try {
+          setLoading(true)
+          if (enableLLM) {
+            const generated = await callAdviceEndpoint(summary, period)
+            if (generated && generated.length) setFilteredAdvice(generated)
+            else setFilteredAdvice(advice)
+          } else {
+            console.log('advices: LLM disabled by toggle, using fallback advice')
+            setFilteredAdvice(advice)
+          }
+        } catch (e) {
+          console.error('advices: error generating advices from LLM', e)
+          setFilteredAdvice(advice)
+        }
+      } else {
+        setFilteredAdvice(advice)
+      }
     } catch (err) {
       console.error('Errore fetch advices chart:', err)
     } finally {
@@ -204,6 +311,15 @@ export default function Advices() {
         <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: HORIZONTAL_GUTTER, justifyContent: 'space-between' }}>
           <View>
             <Text style={{ color: "#333", fontSize: 34, fontWeight: 'bold' }}>Advices</Text>
+          </View>
+          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+            <Text style={{ marginRight: 8, color: '#333' }}>{enableLLM ? 'AI: On' : 'AI: Off'}</Text>
+            <Switch
+              value={enableLLM}
+              onValueChange={(v) => { console.log('advices: enableLLM ->', v); setEnableLLM(v) }}
+              trackColor={{ false: '#767577', true: COLORS.primary }}
+              thumbColor={enableLLM ? '#fff' : '#f4f3f4'}
+            />
           </View>
         </View>
 
@@ -285,7 +401,7 @@ export default function Advices() {
           </View>
 
           {filteredAdvice && filteredAdvice.length > 0 && (
-            <View style={{ marginBottom: 20 }}>
+            <View style={{ marginBottom: 90 }}>
               <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 15 }}>Consigli</Text>
               {filteredAdvice.map((item, index) => (
                 <LinearGradient
