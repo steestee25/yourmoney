@@ -1,7 +1,6 @@
-import { FontAwesome5 } from '@expo/vector-icons'
 import { GoogleGenAI } from '@google/genai'
 import * as Haptics from 'expo-haptics'
-import { LinearGradient } from 'expo-linear-gradient'
+// LinearGradient removed: advice cards will use plain backgroundColor
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native'
 import { PieChart } from 'react-native-gifted-charts'
@@ -26,7 +25,7 @@ export default function Advices() {
   const [period, setPeriod] = useState<PeriodType>('month')
   const [enableLLM, setEnableLLM] = useState(true)
 
-  const { locale } = useTranslation()
+  const { locale, t } = useTranslation()
   const [refreshing, setRefreshing] = useState(false)
 
   // Derive category colors from locales so colors stay consistent with Home
@@ -81,7 +80,7 @@ export default function Advices() {
     if (!session?.user) return
     try {
       setLoading(true)
-      
+
       let result
       if (period === 'month') {
         result = await fetchExpensesByCategoryLastMonth(session.user.id)
@@ -119,7 +118,8 @@ export default function Advices() {
         const gradBase = (categoryColors[r.category] && categoryColors[r.category][1]) || base
         const color = hexToRgba(base, 0.125)
         const gradient = hexToRgba(gradBase, 0.125)
-        const item: any = { value: r.total, color, gradientCenterColor: gradient, label: r.category }
+        const localizedLabel = (categoriesFromLocale[r.category] && categoriesFromLocale[r.category].label) || r.category
+        const item: any = { value: r.total, color, gradientCenterColor: gradient, label: localizedLabel, key: r.category }
         if (idx === maxIndex) item.focused = true
         return item
       })
@@ -265,6 +265,28 @@ export default function Advices() {
 
   const renderDot = (color: string) => <View style={{ height: 10, width: 10, borderRadius: 5, backgroundColor: color, marginRight: 10 }} />
 
+  const getCategoryKeyFromLabel = (label: string) => {
+    if (!label) return null
+    const entries = Object.entries(categoriesFromLocale)
+    const b = label.toString().toLowerCase().trim()
+    for (const [k, v] of entries) {
+      const lab = (v && v.label) ? String(v.label).toLowerCase().trim() : ''
+      if (!lab) continue
+      if (lab === b || lab.includes(b) || b.includes(lab) || k.toLowerCase() === b) return k
+    }
+    return null
+  }
+
+  const getCategoryBaseColor = (keyOrLabel: string) => {
+    if (!keyOrLabel) return '#CCCCCC'
+    // try direct key
+    if (categoryColors[keyOrLabel] && categoryColors[keyOrLabel][0]) return categoryColors[keyOrLabel][0]
+    // try mapping from localized label to key
+    const mapped = getCategoryKeyFromLabel(keyOrLabel)
+    if (mapped && categoryColors[mapped] && categoryColors[mapped][0]) return categoryColors[mapped][0]
+    return '#CCCCCC'
+  }
+
   const handlePiePress = (slice: any, index: number) => {
     // For demo purposes we filter hardcoded advice by category
     const advice = [
@@ -275,6 +297,8 @@ export default function Advices() {
     ]
 
     // Toggle selection on same index and update pieData focused flags
+    const sliceKey = slice?.key || getCategoryKeyFromLabel(slice?.label) || slice?.label
+
     if (selectedIndex === index) {
       setSelectedIndex(null)
       setPieData((prev) => prev.map((p) => ({ ...p, focused: false })))
@@ -282,7 +306,11 @@ export default function Advices() {
     } else {
       setSelectedIndex(index)
       setPieData((prev) => prev.map((p, i) => ({ ...p, focused: i === index })))
-      setFilteredAdvice(advice.filter(a => a.category === slice.label))
+      // Filter advice by matching category key or localized label
+      setFilteredAdvice(advice.filter(a => {
+        const cat = a.category
+        return cat === sliceKey || cat === slice.label || getCategoryKeyFromLabel(cat) === sliceKey
+      }))
     }
   }
 
@@ -308,139 +336,131 @@ export default function Advices() {
 
   return (
     <View style={{ flex: 1, backgroundColor: COLORS.white, paddingTop: HEADER_TOP }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: HORIZONTAL_GUTTER, justifyContent: 'space-between' }}>
-          <View>
-            <Text style={{ color: "#333", fontSize: 34, fontWeight: 'bold' }}>Advices</Text>
-          </View>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Text style={{ marginRight: 8, color: '#333' }}>{enableLLM ? 'AI: On' : 'AI: Off'}</Text>
-            <Switch
-              value={enableLLM}
-              onValueChange={(v) => { console.log('advices: enableLLM ->', v); setEnableLLM(v) }}
-              trackColor={{ false: '#767577', true: COLORS.primary }}
-              thumbColor={enableLLM ? '#fff' : '#f4f3f4'}
-            />
-          </View>
+      <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: HORIZONTAL_GUTTER, justifyContent: 'space-between' }}>
+        <View>
+          <Text style={{ color: "#333", fontSize: 34, fontWeight: 'bold' }}>{t ? t('tabs.advices') : 'Advices'}</Text>
         </View>
-
-        {/* Period Toggle */}
-        <View style={{ flexDirection: 'row', marginTop: 15, marginHorizontal: HORIZONTAL_GUTTER, borderRadius: 35,
-          backgroundColor: '#faf9f9ff', padding: 4 }}>
-          <TouchableOpacity
-            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setPeriod('month'); setSelectedIndex(null); }}
-            style={{
-              flex: 1,
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              borderRadius: 35,
-              backgroundColor: period === 'month' ? '#ffffff' : 'transparent',
-              borderWidth: period === 'month' ? 0.5 : 0,
-              borderColor: period === 'month' ? '#e0e0e0f1' : 'transparent',
-            }}
-          >
-            <Text style={{ textAlign: 'center', 
-              fontWeight: period === 'month' ? '600' : '400', color: "#333" }}>
-              Last Month
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setPeriod('3months'); setSelectedIndex(null); }}
-            style={{
-              flex: 1,
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              borderRadius: 35,
-              backgroundColor: period === '3months' ? '#ffffff' : 'transparent',
-              borderWidth: period === '3months' ? 0.5 : 0,
-              borderColor: period === '3months' ? '#e0e0e0f1' : 'transparent',
-            }}
-          >
-            <Text style={{ textAlign: 'center',
-              fontWeight: period === '3months' ? '600' : '400', color: "#333" }}>
-              3 Months
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setPeriod('year'); setSelectedIndex(null); }}
-            style={{
-              flex: 1,
-              paddingVertical: 8,
-              paddingHorizontal: 12,
-              borderRadius: 35,
-              backgroundColor: period === 'year' ? '#ffffff' : 'transparent',
-              borderWidth: period === 'year' ? 0.5 : 0,
-              borderColor: period === 'year' ? '#e0e0e0f1' : 'transparent',
-            }}
-          >
-            <Text style={{ textAlign: 'center',
-              fontWeight: period === 'year' ? '600' : '400', color: "#333" }}>
-              Last Year
-            </Text>
-          </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <Text style={{ marginRight: 8, color: '#333' }}>{enableLLM ? 'AI: On' : 'AI: Off'}</Text>
+          <Switch
+            value={enableLLM}
+            onValueChange={(v) => { console.log('advices: enableLLM ->', v); setEnableLLM(v) }}
+            trackColor={{ false: '#767577', true: COLORS.primary }}
+            thumbColor={enableLLM ? '#fff' : '#f4f3f4'}
+          />
         </View>
-
-        <ScrollView
-          showsVerticalScrollIndicator={false}
-          style={{ paddingHorizontal: HORIZONTAL_GUTTER }}
-          refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
-        >
-          <View style={{ alignItems: 'center', paddingVertical: 20 }}>
-            <PieChart
-              data={pieData.map((p, i) => ({ ...p, onPress: () => handlePiePress(p, i) }))}
-              donut
-              showGradient={false}
-              sectionAutoFocus
-              focusOnPress
-              extraRadiusForFocused={10}
-              radius={90}
-              innerRadius={60}
-              innerCircleColor={'#F5F5F5'}
-              centerLabelComponent={() => <View />}
-            />
-            {renderLegendComponent()}
-          </View>
-
-          {filteredAdvice && filteredAdvice.length > 0 && (
-            <View style={{ marginBottom: 90 }}>
-              <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 15 }}>Consigli</Text>
-              {filteredAdvice.map((item, index) => (
-                <LinearGradient
-                  key={index}
-                  colors={
-                    (categoryColors[item.category] && [appendHexOpacity(categoryColors[item.category][0], '20'), categoryColors[item.category][1]])
-                    || ['#CFFFE6', '#CFFFE6']
-                  }
-                  start={{ x: 0, y: 0 }}
-                  end={{ x: 1, y: 1 }}
-                  style={{
-                    flexDirection: 'row',
-                    padding: 18,
-                    borderRadius: 20,
-                    marginBottom: 12,
-                    shadowColor: '#000',
-                    shadowOpacity: 0.1,
-                    shadowRadius: 5,
-                    elevation: 3,
-                    alignItems: 'center'
-                  }}
-                >
-                  <View style={{ width: 40, height: 40, borderRadius: 8, backgroundColor: appendHexOpacity((categoryColors[item.category] && categoryColors[item.category][0]) || '#CCCCCC', '20'), justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
-                    <FontAwesome5
-                      name={categoryIcons[item.category] || 'lightbulb'}
-                      size={18}
-                      color="#fff"
-                    />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 16, lineHeight: 22, color: '#031f17ff', flexWrap: 'wrap' }}>
-                      {renderStyledText(item.text)}
-                    </Text>
-                  </View>
-                </LinearGradient>
-              ))}
-            </View>
-          )}
-        </ScrollView>
       </View>
+
+      {/* Period Toggle */}
+      <View style={{
+        flexDirection: 'row', marginTop: 15, marginHorizontal: HORIZONTAL_GUTTER, borderRadius: 35,
+        backgroundColor: '#faf9f9ff', padding: 4
+      }}>
+        <TouchableOpacity
+          onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) { }; setPeriod('month'); setSelectedIndex(null); }}
+          style={{
+            flex: 1,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderRadius: 35,
+            backgroundColor: period === 'month' ? '#ffffff' : 'transparent',
+            borderWidth: period === 'month' ? 0.5 : 0,
+            borderColor: period === 'month' ? '#e0e0e0f1' : 'transparent',
+          }}
+        >
+          <Text style={{
+            textAlign: 'center',
+            fontWeight: period === 'month' ? '600' : '400', color: "#333"
+          }}>
+            {t ? t('advicesLabels.lastMonth') : 'Last Month'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) { }; setPeriod('3months'); setSelectedIndex(null); }}
+          style={{
+            flex: 1,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderRadius: 35,
+            backgroundColor: period === '3months' ? '#ffffff' : 'transparent',
+            borderWidth: period === '3months' ? 0.5 : 0,
+            borderColor: period === '3months' ? '#e0e0e0f1' : 'transparent',
+          }}
+        >
+          <Text style={{
+            textAlign: 'center',
+            fontWeight: period === '3months' ? '600' : '400', color: "#333"
+          }}>
+            {t ? t('advicesLabels.threeMonths') : '3 Months'}
+          </Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) { }; setPeriod('year'); setSelectedIndex(null); }}
+          style={{
+            flex: 1,
+            paddingVertical: 8,
+            paddingHorizontal: 12,
+            borderRadius: 35,
+            backgroundColor: period === 'year' ? '#ffffff' : 'transparent',
+            borderWidth: period === 'year' ? 0.5 : 0,
+            borderColor: period === 'year' ? '#e0e0e0f1' : 'transparent',
+          }}
+        >
+          <Text style={{
+            textAlign: 'center',
+            fontWeight: period === 'year' ? '600' : '400', color: "#333"
+          }}>
+            {t ? t('advicesLabels.lastYear') : 'Last Year'}
+          </Text>
+        </TouchableOpacity>
+      </View>
+
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        style={{ paddingHorizontal: HORIZONTAL_GUTTER }}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
+      >
+        <View style={{ alignItems: 'center', paddingVertical: 20 }}>
+          <PieChart
+            data={pieData.map((p, i) => ({ ...p, onPress: () => handlePiePress(p, i) }))}
+            donut
+            showGradient={false}
+            sectionAutoFocus
+            focusOnPress
+            extraRadiusForFocused={10}
+            radius={90}
+            innerRadius={60}
+            innerCircleColor={'#F5F5F5'}
+            centerLabelComponent={() => <View />}
+          />
+          {renderLegendComponent()}
+        </View>
+
+        {filteredAdvice && filteredAdvice.length > 0 && (
+          <View style={{ marginBottom: 90 }}>
+            <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 15 }}>{t ? t('tabs.advices') : 'Consigli'}</Text>
+            {filteredAdvice.map((item, index) => (
+              <View
+                key={index}
+                style={{
+                  backgroundColor: appendHexOpacity(getCategoryBaseColor(item.category) || '#CCCCCC', '20'),
+                  borderRadius: 12,
+                  padding: 15,
+                  marginBottom: 12,
+                  flexDirection: 'row',
+                  alignItems: 'center'
+                }}
+              >
+                <View style={{ flex: 1 }}>
+                  <Text>
+                    {renderStyledText(item.text)}
+                  </Text>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+      </ScrollView>
+    </View>
   )
 }

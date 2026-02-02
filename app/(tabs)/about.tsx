@@ -93,7 +93,7 @@ export default function AboutScreen() {
     <View style={styles.container}>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingTop: 40, justifyContent: 'space-between' }}>
         <View>
-          <Text style={{ color: "#333", fontSize: 34, fontWeight: 'bold' }}>Profile</Text>
+          <Text style={{ color: "#333", fontSize: 34, fontWeight: 'bold' }}>{t ? t('tabs.profile') : 'Profile'}</Text>
         </View>
       </View>
       <ScrollView style={styles.scroll} contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>

@@ -4,7 +4,13 @@
             "home": "Home",
             "about": "About",
             "advices": "Advices",
+            "profile": "Profile",
             "chat": "Chat"
+        },
+        "advicesLabels": {
+            "lastMonth": "Last Month",
+            "threeMonths": "3 Months",
+            "lastYear": "Last Year"
         },
         "common": {
             "next": "Next",
@@ -98,7 +104,13 @@
             "home": "Home",
             "about": "Informazioni",
             "advices": "Consigli",
+            "profile": "Profilo",
             "chat": "Chat"
+        },
+        "advicesLabels": {
+            "lastMonth": "Ultimo Mese",
+            "threeMonths": "3 Mesi",
+            "lastYear": "Ultimo Anno"
         },
         "common": {
             "next": "Avanti",
