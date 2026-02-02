@@ -42,6 +42,17 @@ export default function Advices() {
     Bollette: 'file-invoice-dollar',
   }
 
+  // Aliases to map Italian/other local category names to canonical keys used in `locales.categories`
+  const categoryAlias: Record<string, string> = {
+    svago: 'Entertainment',
+    cibo: 'Food & Drink',
+    trasporti: 'Public Transport',
+    bollette: 'Bills',
+    abbigliamento: 'Clothing',
+    spesa: 'Groceries',
+    ristorante: 'Restaurant'
+  }
+
   const appendHexOpacity = (hex: string, alpha = '20') => {
     if (!hex || typeof hex !== 'string') return hex;
     if (hex.length === 7 && hex.startsWith('#')) return `${hex}${alpha}`;
@@ -267,8 +278,10 @@ export default function Advices() {
 
   const getCategoryKeyFromLabel = (label: string) => {
     if (!label) return null
-    const entries = Object.entries(categoriesFromLocale)
     const b = label.toString().toLowerCase().trim()
+    // check alias map first
+    if (categoryAlias[b]) return categoryAlias[b]
+    const entries = Object.entries(categoriesFromLocale)
     for (const [k, v] of entries) {
       const lab = (v && v.label) ? String(v.label).toLowerCase().trim() : ''
       if (!lab) continue
@@ -439,25 +452,33 @@ export default function Advices() {
         {filteredAdvice && filteredAdvice.length > 0 && (
           <View style={{ marginBottom: 90 }}>
             <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 15 }}>{t ? t('tabs.advices') : 'Consigli'}</Text>
-            {filteredAdvice.map((item, index) => (
-              <View
-                key={index}
-                style={{
-                  backgroundColor: appendHexOpacity(getCategoryBaseColor(item.category) || '#CCCCCC', '20'),
-                  borderRadius: 12,
-                  padding: 15,
-                  marginBottom: 12,
-                  flexDirection: 'row',
-                  alignItems: 'center'
-                }}
-              >
-                <View style={{ flex: 1 }}>
-                  <Text>
-                    {renderStyledText(item.text)}
-                  </Text>
+            {filteredAdvice.map((item, index) => {
+              const catKey = getCategoryKeyFromLabel(item.category) || item.category
+              const emoji = (categoriesFromLocale[catKey] && categoriesFromLocale[catKey].icon) || '💡'
+              const baseColor = getCategoryBaseColor(item.category)
+              return (
+                <View
+                  key={index}
+                  style={{
+                    backgroundColor: appendHexOpacity(baseColor || '#CCCCCC', '20'),
+                    borderRadius: 12,
+                    padding: 15,
+                    marginBottom: 12,
+                    flexDirection: 'row',
+                    alignItems: 'center'
+                  }}
+                >
+                  <View style={{ width: 36, height: 36, borderRadius: 8, borderWidth: 1.5, borderColor: hexToRgba(baseColor, 0.3), justifyContent: 'center', alignItems: 'center', marginRight: 12 }}>
+                    <Text style={{ fontSize: 18 }}>{emoji}</Text>
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text>
+                      {renderStyledText(item.text)}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              )
+            })}
           </View>
         )}
       </ScrollView>
