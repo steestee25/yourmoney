@@ -4,13 +4,17 @@ import { useEffect, useState } from "react";
 import { FlatList, Text, TouchableOpacity, View } from "react-native";
 import { BarChart } from "react-native-gifted-charts";
 
+import SyncStatus from "../../components/SyncStatus";
 import TransactionModal from "../../components/TransactionModal";
 import { styles } from "../../styles/home.styles";
 
 import { useAuth } from '../../contexts/AuthContext';
+import { useNetworkStatus } from '../../hooks/useNetworkStatus';
 import { useTranslation } from '../../lib/i18n';
 import { supabase } from '../../lib/supabase';
+import { syncWithSupabase } from '../../lib/syncOffline';
 import { createTransaction, fetchExpensesByMonth, fetchIncomeByMonth, fetchUserTransactions, groupTransactionsByDay, updateTransaction } from '../../lib/transactions';
+import { createTransactionWithOfflineSupport, fetchUserTransactionsWithOfflineSupport, updateTransactionWithOfflineSupport } from '../../lib/transactionsOffline';
 import locales from '../../locales/locales.json';
 
 import { COLORS } from '../../constants/color';
@@ -32,8 +36,10 @@ export default function Index() {
   const [chartData, setChartData] = useState([]);
   const [filterType, setFilterType] = useState('expenses'); // 'expenses' | 'income'
   const [allTransactions, setAllTransactions] = useState([]); // Store all transactions
+  const [isSyncing, setIsSyncing] = useState(false)
 
   const { session } = useAuth()
+  const { isOnline, isLoading: networkLoading } = useNetworkStatus()
 
   const [profile, setProfile] = useState<any>(null);
 
@@ -98,7 +104,10 @@ export default function Index() {
       setSelectedValue(null);
       setSelectedIndex(null);
       try {
-        const transactions = await fetchUserTransactions(session.user.id);
+        const transactions = await fetchUserTransactionsWithOfflineSupport(
+          session.user.id,
+          fetchUserTransactions
+        );
         setAllTransactions(transactions);
 
         // Filtra transazioni in base a filterType
@@ -129,6 +138,37 @@ export default function Index() {
     fetchTransactions();
   }, [session?.user?.id, filterType]);
 
+  // Auto-sync when coming back online
+  useEffect(() => {
+    if (isOnline && !networkLoading && session?.user?.id && !isSyncing) {
+      const performSync = async () => {
+        setIsSyncing(true);
+        try {
+          const result = await syncWithSupabase(session.user.id);
+          if (result.syncedCount > 0) {
+            // Refresh transactions after sync
+            const transactions = await fetchUserTransactionsWithOfflineSupport(
+              session.user.id,
+              fetchUserTransactions
+            );
+            setAllTransactions(transactions);
+            const filteredTransactions = filterType === 'expenses'
+              ? transactions.filter(t => t.amount < 0)
+              : transactions.filter(t => t.amount > 0);
+            const grouped = groupTransactionsByDay(filteredTransactions, categoryIcons, categoryColors, incomeCategoryIcons, incomeCategoryColors);
+            setExpenseData(grouped);
+            await refreshChart(session.user.id);
+          }
+        } catch (err) {
+          console.error('Errore durante la sincronizzazione:', err);
+        } finally {
+          setIsSyncing(false);
+        }
+      };
+      performSync();
+    }
+  }, [isOnline, networkLoading, session?.user?.id]);
+
   // Refresh chart helper (fetches monthly aggregates based on current filter)
   const refreshChart = async (userId) => {
     if (!userId) return;
@@ -144,6 +184,45 @@ export default function Index() {
       setChartData(chartDataWithColors);
     } catch (err) {
       console.error('Errore aggiornamento grafico:', err);
+    }
+  };
+
+  // Compute monthly aggregates from local transactions (last 6 months)
+  const computeChartFromLocal = (transactions) => {
+    try {
+      const monthsData = {} as Record<string, number>;
+      const today = new Date();
+      for (let i = 5; i >= 0; i--) {
+        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+        const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+        monthsData[monthKey] = 0;
+      }
+
+      (transactions || []).forEach((transaction) => {
+        const amt = transaction.amount;
+        const isMatch = filterType === 'expenses' ? amt < 0 : amt > 0;
+        if (!isMatch) return;
+        const txDate = new Date(transaction.date);
+        const monthKey = `${txDate.getFullYear()}-${String(txDate.getMonth() + 1).padStart(2, '0')}`;
+        if (monthsData.hasOwnProperty(monthKey)) {
+          monthsData[monthKey] += filterType === 'expenses' ? Math.abs(amt) : amt;
+        }
+      });
+
+      const monthLabels = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+      const chart = Object.entries(monthsData).map(([monthKey, total]) => {
+        const [year, month] = monthKey.split('-');
+        const monthIndex = parseInt(month) - 1;
+        return { value: Math.round(total), label: monthLabels[monthIndex] };
+      });
+
+      const chartDataWithColors = chart.map((item, index) => ({
+        ...item,
+        frontColor: selectedIndex === index ? '#ffffff' : (index % 2 === 0 ? '#8fe8e7ff' : '#78ebe9ff'),
+      }));
+      setChartData(chartDataWithColors);
+    } catch (err) {
+      console.error('Errore nel calcolo grafico locale:', err);
     }
   };
 
@@ -173,13 +252,14 @@ export default function Index() {
     }
 
     try {
-      // Salva nel DB
-      const savedTransaction = await createTransaction(
+      // Salva nel DB con supporto offline
+      const savedTransaction = await createTransactionWithOfflineSupport(
         session.user.id,
         newTransaction.name,
         newTransaction.category,
         newTransaction.amount,
-        newTransaction.date
+        newTransaction.date,
+        createTransaction
       );
 
       if (!savedTransaction) {
@@ -224,7 +304,12 @@ export default function Index() {
       setAllTransactions((prev) => [savedTransaction, ...(prev || [])]);
       setSelectedValue(null);
       setSelectedIndex(null);
-      await refreshChart(session.user.id);
+      if (isOnline) {
+        await refreshChart(session.user.id);
+      } else {
+        // Recompute chart locally including the newly saved offline transaction
+        computeChartFromLocal([savedTransaction, ...(allTransactions || [])]);
+      }
     } catch (err) {
       console.error('Errore in handleAddTransaction:', err);
     }
@@ -234,14 +319,18 @@ export default function Index() {
   const handleEditTransaction = async (updatedTransaction) => {
     if (!updatedTransaction?.id) return;
 
-    // Persist changes to DB first
+    // Persist changes to DB first (con supporto offline)
     try {
-      const saved = await updateTransaction(updatedTransaction.id, {
-        name: updatedTransaction.name,
-        category: updatedTransaction.category,
-        amount: updatedTransaction.amount,
-        date: new Date(updatedTransaction.date),
-      });
+      const saved = await updateTransactionWithOfflineSupport(
+        updatedTransaction.id,
+        {
+          name: updatedTransaction.name,
+          category: updatedTransaction.category,
+          amount: updatedTransaction.amount,
+          date: new Date(updatedTransaction.date),
+        },
+        updateTransaction
+      );
 
       if (!saved) {
         console.error('Update DB failed');
@@ -315,10 +404,14 @@ export default function Index() {
       // Update allTransactions cache
       setAllTransactions((prev) => (prev || []).map((t) => (t.id === savedWithUI.id ? savedWithUI : t)));
 
-      // Reset selection and refresh chart
+      // Reset selection and refresh chart (use local data when offline)
       setSelectedValue(null);
       setSelectedIndex(null);
-      await refreshChart(session.user.id);
+      if (isOnline) {
+        await refreshChart(session.user.id);
+      } else {
+        computeChartFromLocal((allTransactions || []).map((t) => (t.id === savedWithUI.id ? savedWithUI : t)));
+      }
 
       setEditModalVisible(false);
     } catch (err) {
@@ -422,6 +515,9 @@ export default function Index() {
           <Ionicons name="search-outline" size={26} color="#333" />
         </View>
       </View>
+
+      {/* Sync Status Indicator */}
+      <SyncStatus isOnline={isOnline} isSyncing={isSyncing} />
 
       {/* Expenses/Income selector */}
       <View style={{ flexDirection: 'row', marginTop: RECAP_TOP, marginHorizontal: HORIZONTAL_GUTTER, borderRadius: 35,
