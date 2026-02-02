@@ -78,8 +78,8 @@ export default function Index() {
           return;
         }
 
+        console.log('✓ Fetched profile:', data);
         setProfile(data || null);
-        console.log('Profile from DB:', data);
       } catch (err) {
         console.log('Unexpected error fetching profile:', err);
       }
@@ -519,10 +519,10 @@ export default function Index() {
 
       {/* FAB Button */}
       <View style={styles.fabContainer} pointerEvents="box-none">
-        {/* FAB Assistente AI */}
+        {/* FAB Assistente AI 
         <View style={[styles.fabButtonSmall, { marginBottom: 15 }]}>
           <Ionicons name="chatbubble-ellipses-outline" size={32} color={COLORS.white} />
-        </View>
+        </View>*/}
         {/* FAB Add */}
         <TouchableOpacity
               style={styles.fabButton}

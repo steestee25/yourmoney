@@ -36,6 +36,7 @@ export const fetchUserTransactions = async (userId: string): Promise<DBTransacti
       return [];
     }
 
+    console.log('✓ Fetched user transactions:', data);
     return data || [];
   } catch (err) {
     console.error('Errore inaspettato nel fetch transazioni:', err);
@@ -79,6 +80,7 @@ export const createTransaction = async (
       return null;
     }
 
+    console.log('✓ Created transaction:', data);
     return data;
   } catch (err) {
     console.error('Errore inaspettato nel create transazione:', err);
@@ -135,6 +137,7 @@ export const updateTransaction = async (
       return null;
     }
 
+    console.log('✓ Updated transaction:', data);
     return data;
   } catch (err) {
     console.error("Errore inaspettato nell'update transazione:", err);
@@ -157,6 +160,7 @@ export const deleteTransaction = async (transactionId: string): Promise<boolean>
       return false;
     }
 
+    console.log('✓ Deleted transaction:', transactionId);
     return true;
   } catch (err) {
     console.error('Errore inaspettato nella delete transazione:', err);
@@ -227,6 +231,7 @@ export const fetchExpensesByMonth = async (userId: string) => {
       return [];
     }
 
+    console.log('✓ Fetched expenses data:', data);
     // Calcola ultimi 6 mesi
     const monthsData: Record<string, number> = {};
     const today = new Date();
@@ -280,6 +285,7 @@ export const fetchIncomeByMonth = async (userId: string) => {
       return [];
     }
 
+    console.log('✓ Fetched income data:', data);
     // Calcola ultimi 6 mesi
     const monthsData: Record<string, number> = {};
     const today = new Date();

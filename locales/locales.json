@@ -3,14 +3,15 @@
         "tabs": {
             "home": "Home",
             "about": "About",
-            "advices": "Advices",
+            "analysis": "Transaction Analysis",
             "profile": "Profile",
             "chat": "Chat"
         },
         "advicesLabels": {
             "lastMonth": "Last Month",
             "threeMonths": "3 Months",
-            "lastYear": "Last Year"
+            "lastYear": "Last Year",
+            "advices": "Advices"
         },
         "common": {
             "next": "Next",
@@ -103,14 +104,15 @@
         "tabs": {
             "home": "Home",
             "about": "Informazioni",
-            "advices": "Consigli",
+            "analysis": "Analisi spese",
             "profile": "Profilo",
             "chat": "Chat"
         },
         "advicesLabels": {
             "lastMonth": "Ultimo Mese",
             "threeMonths": "3 Mesi",
-            "lastYear": "Ultimo Anno"
+            "lastYear": "Ultimo Anno",
+            "advices": "Consigli"
         },
         "common": {
             "next": "Avanti",
