@@ -89,18 +89,22 @@ export default function TransactionModal({
             <View style={styles.modalOverlay}>
                 <Pressable style={styles.overlayFill} onPress={onCancel} />
                 <View style={styles.bottomSheet}>
-                    <TouchableOpacity
-                        style={styles.closeBtn}
-                        onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; onCancel(); }}
-                    >
-                        <Ionicons name="close" size={20} color="#333" />
-                    </TouchableOpacity>
+                    {/* Top row: small x */}
+                    <View style={styles.topRow}>
+                        <View style={styles.iconClose}>
+                            <TouchableOpacity onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) { }; onCancel(); }}>
+                                <Ionicons name="close" size={20} color="#333" />
+                            </TouchableOpacity>
+                        </View>
+                    </View>
 
                     {/* Expenses/Income selector */}
-                    <View style={{ flexDirection: 'row', borderRadius: 35,
-                        backgroundColor: '#faf9f9ff', padding: 4, marginBottom: 15 }}>
+                    <View style={{
+                        flexDirection: 'row', borderRadius: 35,
+                        backgroundColor: '#faf9f9ff', padding: 4, marginBottom: 15
+                    }}>
                         <TouchableOpacity
-                            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setIsIncome(false); }}
+                            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) { }; setIsIncome(false); }}
                             style={{
                                 flex: 1,
                                 paddingVertical: 8,
@@ -111,13 +115,15 @@ export default function TransactionModal({
                                 borderColor: !isIncome ? '#e0e0e0f1' : 'transparent',
                             }}
                         >
-                            <Text style={{ textAlign: 'center', 
-                                fontWeight: !isIncome ? '600' : '400', color: COLORS.red }}>
+                            <Text style={{
+                                textAlign: 'center',
+                                fontWeight: !isIncome ? '600' : '400', color: COLORS.red
+                            }}>
                                 {t ? t('transactionModal.expense') : 'Expenses'}
                             </Text>
                         </TouchableOpacity>
                         <TouchableOpacity
-                            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch(e) {} ; setIsIncome(true); }}
+                            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light); } catch (e) { }; setIsIncome(true); }}
                             style={{
                                 flex: 1,
                                 paddingVertical: 8,
@@ -128,8 +134,10 @@ export default function TransactionModal({
                                 borderColor: isIncome ? '#e0e0e0f1' : 'transparent',
                             }}
                         >
-                            <Text style={{ textAlign: 'center',
-                                fontWeight: isIncome ? '600' : '400', color: COLORS.green }}>
+                            <Text style={{
+                                textAlign: 'center',
+                                fontWeight: isIncome ? '600' : '400', color: COLORS.green
+                            }}>
                                 {t ? t('transactionModal.income') : 'Income'}
                             </Text>
                         </TouchableOpacity>
@@ -142,7 +150,7 @@ export default function TransactionModal({
                         style={{ marginBottom: 15 }}
                         data={Object.keys(currentIcons)}
                         horizontal
-                            renderItem={({ item }) => (
+                        renderItem={({ item }) => (
                             <TouchableOpacity
                                 style={[
                                     styles.categoryItem,
@@ -151,7 +159,7 @@ export default function TransactionModal({
                                         borderColor: (currentColors[item] || '#999999') + 90,
                                     },
                                 ]}
-                                onPress={async () => { try { await Haptics.selectionAsync(); } catch(e) {}; setCategory(item); }}
+                                onPress={async () => { try { await Haptics.selectionAsync(); } catch (e) { }; setCategory(item); }}
                             >
                                 <Text style={[{ fontSize: 14, color: "#333" }, category === item && styles.categoryItemSelected]}>
                                     {currentIcons[item]} {currentLabels?.[item] || item}
@@ -176,18 +184,18 @@ export default function TransactionModal({
                     <View style={{ marginBottom: 15 }}>
                         <View style={styles.dateRow}>
                             <Text style={styles.amountLabel}>{t('transactionModal.date')}</Text>
-                            <TouchableOpacity style={styles.dateButton} onPress={async () => { try { await Haptics.selectionAsync(); } catch(e) {}; setShowDatePicker(true); }}>
+                            <TouchableOpacity style={styles.dateButton} onPress={async () => { try { await Haptics.selectionAsync(); } catch (e) { }; setShowDatePicker(true); }}>
                                 <Text style={styles.dateButtonText}>{date.toLocaleDateString(t('transactionModal.dateLocale'))}</Text>
                             </TouchableOpacity>
                         </View>
 
                         {showDatePicker && (
-                                <DatePicker
+                            <DatePicker
                                 mode="single"
                                 date={date}
                                 firstDayOfWeek={1}
                                 onChange={({ date }) => {
-                                    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch(e) {}
+                                    try { Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (e) { }
                                     setDate(date);
                                     setShowDatePicker(false);
                                 }}
@@ -204,12 +212,14 @@ export default function TransactionModal({
                         )}
                     </View>
 
-                    <TouchableOpacity
-                        style={[styles.button, { marginTop: 15 }]}
-                        onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch(e) {}; handleSave(); }}
-                    >
-                        <Text style={styles.buttonText}>{mode === "add" ? t('transactionModal.add') : t('common.save')}</Text>
-                    </TouchableOpacity>
+                    <View style={styles.buttonContainer}>
+                        <TouchableOpacity
+                            style={styles.button}
+                            onPress={async () => { try { await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium); } catch (e) { }; handleSave(); }}
+                        >
+                            <Text style={styles.buttonText}>{mode === "add" ? t('transactionModal.add') : t('common.save')}</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
             </View>
         </Modal>
