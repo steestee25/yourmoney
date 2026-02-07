@@ -29,7 +29,7 @@ export default StyleSheet.create({
     label: {
         fontSize: 16,
         fontWeight: "600",
-        marginBottom: 5,
+        marginBottom: 10,
     },
     categoryItem: {
         borderWidth: 1,
@@ -70,7 +70,8 @@ export default StyleSheet.create({
     },
     dateButton: {
         flex: 1,
-        backgroundColor: "#87efefff",
+        backgroundColor: "#b3f0f0ff",
+       
         paddingVertical: 10,
         paddingHorizontal: 15,
         borderRadius: 10,
@@ -110,5 +111,40 @@ export default StyleSheet.create({
         color: COLORS.white,
         fontWeight: "600",
         fontSize: 14,
+    },
+    modalOverlay: { flex: 1, justifyContent: 'flex-end', backgroundColor: 'rgba(0,0,0,0.4)' },
+    overlayFill: { flex: 1 },
+    bottomSheet: {
+        backgroundColor: COLORS.white,
+        borderTopLeftRadius: 30,
+        borderTopRightRadius: 30,
+        paddingHorizontal: 16,
+        paddingTop: 12,
+        paddingBottom: 30,
+        elevation: 6,
+    },
+    sheetTitle: { fontSize: 16, fontWeight: '700', color: '#111', marginTop: '2%', marginBottom: 8 },
+    button: {
+        backgroundColor: COLORS.primaryLight,
+        padding: 15,
+        alignItems: 'center',
+        borderRadius: 15,
+        width: '100%',
+    },
+
+    buttonText: {
+        color: COLORS.white,
+        fontSize: 18,
+        fontWeight: 'bold',
+    },
+    closeBtn: {
+        position: 'absolute',
+        right: 12,
+        top: 12,
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 });

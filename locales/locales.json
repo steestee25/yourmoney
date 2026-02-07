@@ -94,7 +94,7 @@
             "expense": "Expense",
             "income": "Income",
             "category": "Category",
-            "amount": "Amount (€)",
+            "amount": "Amount",
             "date": "Date",
             "add": "Add",
             "dateLocale": "en-GB"
@@ -191,7 +191,7 @@
             "expense": "Spese",
             "income": "Entrate",
             "category": "Categoria",
-            "amount": "Importo (€)",
+            "amount": "Importo",
             "date": "Data",
             "add": "Aggiungi",
             "dateLocale": "it-IT"
