@@ -1,9 +1,11 @@
 import { GoogleGenAI } from '@google/genai'
 import * as Haptics from 'expo-haptics'
 // LinearGradient removed: advice cards will use plain backgroundColor
+import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native'
 import { PieChart } from 'react-native-gifted-charts'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 import { COLORS } from '../../constants/color'
 import { useAuth } from '../../contexts/AuthContext'
 import { useTranslation } from '../../lib/i18n'
@@ -26,6 +28,9 @@ export default function Advices() {
   const [enableLLM, setEnableLLM] = useState(true)
 
   const { locale, t } = useTranslation()
+  const insets = useSafeAreaInsets()
+  const tabBarHeight = useBottomTabBarHeight()
+  const bottomPadding = (insets?.bottom || 0) + (tabBarHeight || 0) + 12
   const [refreshing, setRefreshing] = useState(false)
 
   // Derive category colors from locales so colors stay consistent with Home
@@ -243,7 +248,25 @@ export default function Advices() {
             else setFilteredAdvice(advice)
           } else {
             console.log('advices: LLM disabled by toggle, using fallback advice')
-            setFilteredAdvice(advice)
+            setFilteredAdvice([
+              {
+                text: `Questo è un **costo significativo**. Potresti considerare di ridurre questo importo.\n\nConsigli: **pianifica un budget** per l'intrattenimento, sceglio attività gratuite (parchi, biblioteche, eventi gratuiti, ...).`,
+                category: 'Svago'
+              },
+              {
+                text: `Questo è un costo **relativamente contenuto**.\n\nConsigli: prima di acquistare, verifica cosa hai già nel guardaroba e se l'acquisto è davvero necessario; privilegia capi versatili o di seconda mano per ridurre la spesa.`,
+                category: 'Abbigliamento'
+              },
+              {
+                text: `Questo è un **costo importante**.\n\nConsigli: valuta alternative più economiche (bicicletta, percorsi alternativi) o verifica se l'abbonamento è davvero conveniente per il tuo utilizzo.`,
+                category: 'Trasporti'
+              },
+              {
+                text: `Questo è un **costo contenuto**.\n\nConsigli: analizza la spesa alimentare per **evitare sprechi** e **pianifica i pasti**.`,
+                category: 'Spesa'
+              },
+
+            ])
           }
         } catch (e) {
           console.error('advices: error generating advices from LLM', e)
@@ -266,13 +289,31 @@ export default function Advices() {
   }
 
   const renderStyledText = (text: string) => {
-    const parts = text.split(/(\d+%?|\€\d+|\d+\s*(week|month)s?)/gi)
-    return parts.map((part, i) => (
-      /\d+%?|\€\d+|\d+\s*(week|month)s?/i.test(part)
-        ? <Text key={i} style={{ fontWeight: 'bold', color: '#0B6623' }}>{part}</Text>
-        : <Text key={i}>{part}</Text>
-    ))
+    const parts = text.split(
+      /(\*\*.*?\*\*|\d+%|\d+\s?€|\d+\s?(?:settimana|settimane|mese|mesi)|\d+\s?€\/(?:mese|settimana))/gi
+    )
+
+    return parts.map((part, i) => {
+      if (part.startsWith('**') && part.endsWith('**')) {
+        return (
+          <Text key={i} style={{ fontWeight: '700' }}>
+            {part.replace(/\*\*/g, '')}
+          </Text>
+        )
+      }
+
+      if (/\d/.test(part)) {
+        return (
+          <Text key={i} style={{ fontWeight: '700', color: '#0B6623' }}>
+            {part}
+          </Text>
+        )
+      }
+
+      return <Text key={i}>{part}</Text>
+    })
   }
+
 
   const renderDot = (color: string) => <View style={{ height: 10, width: 10, borderRadius: 5, backgroundColor: color, marginRight: 10 }} />
 
@@ -431,6 +472,7 @@ export default function Advices() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ paddingHorizontal: HORIZONTAL_GUTTER }}
+        contentContainerStyle={{ paddingBottom: Math.max(120, bottomPadding) }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
       >
         <View style={{ alignItems: 'center', paddingVertical: 20 }}>
