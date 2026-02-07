@@ -2,6 +2,7 @@
 import LoadingIndicator from '@/components/LoadingIndicator'
 import { Stack } from 'expo-router'
 import { AppState, StyleSheet } from 'react-native'
+import { SafeAreaProvider } from 'react-native-safe-area-context'
 import CelebrationScreen from '../components/CelebrationScreen'
 import { AuthProvider, useAuth } from '../contexts/AuthContext'
 import { I18nProvider } from '../lib/i18n'
@@ -35,11 +36,13 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <I18nProvider>
-      <AuthProvider>
-        <RootLayoutContent />
-      </AuthProvider>
-    </I18nProvider>
+    <SafeAreaProvider>
+      <I18nProvider>
+        <AuthProvider>
+          <RootLayoutContent />
+        </AuthProvider>
+      </I18nProvider>
+    </SafeAreaProvider>
   )
 }
 

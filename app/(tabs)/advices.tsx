@@ -1,7 +1,6 @@
 import { GoogleGenAI } from '@google/genai'
 import * as Haptics from 'expo-haptics'
 // LinearGradient removed: advice cards will use plain backgroundColor
-import { useBottomTabBarHeight } from '@react-navigation/bottom-tabs'
 import React, { useEffect, useState } from 'react'
 import { ActivityIndicator, Dimensions, RefreshControl, ScrollView, Switch, Text, TouchableOpacity, View } from 'react-native'
 import { PieChart } from 'react-native-gifted-charts'
@@ -28,10 +27,8 @@ export default function Advices() {
   const [enableLLM, setEnableLLM] = useState(true)
 
   const { locale, t } = useTranslation()
-  const insets = useSafeAreaInsets()
-  const tabBarHeight = useBottomTabBarHeight()
-  const bottomPadding = (insets?.bottom || 0) + (tabBarHeight || 0) + 12
   const [refreshing, setRefreshing] = useState(false)
+  const insets = useSafeAreaInsets()
 
   // Derive category colors from locales so colors stay consistent with Home
   const categoriesFromLocale: Record<string, any> = (locales as any)[locale]?.categories || {}
@@ -389,7 +386,7 @@ export default function Advices() {
   }
 
   return (
-    <View style={{ flex: 1, backgroundColor: COLORS.white, paddingTop: HEADER_TOP }}>
+    <View style={{ flex: 1, backgroundColor: COLORS.white, paddingTop: HEADER_TOP, paddingBottom: insets.bottom + 16 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', paddingHorizontal: HORIZONTAL_GUTTER, justifyContent: 'space-between' }}>
         <View>
           <Text style={{ color: "#333", fontSize: 34, fontWeight: 'bold' }}>{t ? t('tabs.analysis') : 'Advices'}</Text>
@@ -472,7 +469,7 @@ export default function Advices() {
       <ScrollView
         showsVerticalScrollIndicator={false}
         style={{ paddingHorizontal: HORIZONTAL_GUTTER }}
-        contentContainerStyle={{ paddingBottom: Math.max(120, bottomPadding) }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + 96 }}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={[COLORS.primary]} />}
       >
         <View style={{ alignItems: 'center', paddingVertical: 20 }}>
@@ -492,7 +489,7 @@ export default function Advices() {
         </View>
 
         {filteredAdvice && filteredAdvice.length > 0 && (
-          <View style={{ marginBottom: 90 }}>
+          <View style={{ marginBottom: insets.bottom + 16 }}>
             <Text style={{ fontSize: 22, fontWeight: 'bold', marginBottom: 15 }}>{t ? t('advicesLabels.advices') : 'Consigli'}</Text>
             {filteredAdvice.map((item, index) => {
               const catKey = getCategoryKeyFromLabel(item.category) || item.category
